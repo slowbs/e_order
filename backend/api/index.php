@@ -71,6 +71,13 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
 
         $where = [];
         $values = [];
+        // Search term 'q'
+        if (!empty($params['q'])) {
+            $q = '%' . $params['q'] . '%';
+            $where[] = '(command_number LIKE ? OR title LIKE ?)';
+            $values[] = $q;
+            $values[] = $q;
+        }
         if (!empty($params['type'])) { $where[] = '`type` = ?'; $values[] = $params['type']; }
         if (!empty($params['status'])) { $where[] = '`status` = ?'; $values[] = $params['status']; }
         if (!empty($params['fiscal_year'])) { $where[] = 'fiscal_year = ?'; $values[] = $params['fiscal_year']; }

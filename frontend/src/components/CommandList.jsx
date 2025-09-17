@@ -10,11 +10,12 @@ export default function CommandList(){
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
   const [editing, setEditing] = useState(null);
 
   useEffect(()=>{ load(); }, [page]);
   async function load(){ 
-    const res = await fetchCommands({ ...filters, page, limit }); 
+    const res = await fetchCommands({ ...filters, page, limit, q: searchTerm }); 
     if (res && Array.isArray(res.data)) {
       setRows(res.data);
       setTotal(res.total);
@@ -50,7 +51,12 @@ export default function CommandList(){
             <option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option><option value="Cancelled">ยกเลิก</option>
           </select>
         </div>
-        <div className="mt-2"><button onClick={handleSearch} className="px-3 py-1 bg-blue-600 text-white rounded">ค้นหา</button></div>
+        <div className="flex items-center gap-4 mt-2">
+          <div className="flex items-center gap-2">
+            <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} placeholder="ค้นหาเลขที่/ชื่อเรื่อง..." className="border p-2 rounded" />
+          </div>
+          <button onClick={handleSearch} className="px-3 py-2 bg-blue-600 text-white rounded">ค้นหา</button>
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border">

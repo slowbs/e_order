@@ -8,6 +8,7 @@ export default function Dashboard(){
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(()=>{ loadSummary(); }, []);
   useEffect(()=>{ loadLatest(); }, [page]); // Reload when page changes
@@ -17,11 +18,19 @@ export default function Dashboard(){
     setSummary(s);
   }
   async function loadLatest(){
-    const res = await fetchCommands({ page, limit });
+    const res = await fetchCommands({ page, limit, q: searchTerm });
     if (res && Array.isArray(res.data)) {
       setLatest(res.data);
       setTotal(res.total);
       setLimit(res.limit);
+    }
+  }
+
+  function handleSearch() {
+    if (page !== 1) {
+      setPage(1); // This will trigger useEffect and reload
+    } else {
+      loadLatest(); // If already on page 1, just reload
     }
   }
 
@@ -54,7 +63,16 @@ export default function Dashboard(){
       </section>
 
       <section className="bg-white p-4 rounded-lg shadow-sm border">
-        <h3 className="font-semibold mb-4">คำสั่งล่าสุด</h3>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <h3 className="font-semibold">คำสั่งล่าสุด</h3>
+          <div className="flex items-center gap-2 mt-2 md:mt-0">
+            <input 
+              type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} 
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="ค้นหาเลขที่/ชื่อเรื่อง..." className="border p-2 rounded w-full md:w-auto" />
+            <button onClick={handleSearch} className="px-3 py-2 bg-blue-600 text-white rounded">ค้นหา</button>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
