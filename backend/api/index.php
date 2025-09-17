@@ -34,7 +34,9 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
         $title = $data['title'] ?? null;
         $date_received = $data['date_received'] ?? null;
         $type = $data['type'] ?? null;
+        $document_type = $data['document_type'] ?? 'คำสั่ง';
         $agency = $data['agency'] ?? null;
+        $budget = $data['budget'] ?? null;
         $details = $data['details'] ?? null;
         $status = $data['status'] ?? 'In Progress';
 
@@ -48,8 +50,8 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
 
         $file_path = handle_file_upload('file');
 
-        $stmt = $pdo->prepare('INSERT INTO commands (command_number,title,date_received,`type`,agency,details,`status`,fiscal_year,fiscal_half,file_path) VALUES (?,?,?,?,?,?,?,?,?,?)');
-        $stmt->execute([$command_number,$title,$date_received,$type,$agency,$details,$status,$fiscal_year,$fiscal_half,$file_path]);
+        $stmt = $pdo->prepare('INSERT INTO commands (command_number,title,date_received,`type`,document_type,agency,budget,details,`status`,fiscal_year,fiscal_half,file_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+        $stmt->execute([$command_number,$title,$date_received,$type,$document_type,$agency,$budget,$details,$status,$fiscal_year,$fiscal_half,$file_path]);
         $id = $pdo->lastInsertId();
         $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
         $stmt->execute([$id]);
@@ -117,7 +119,7 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
         }
 
         // Allow partial updates of fields
-        $allowed = ['command_number','title','date_received','type','agency','details','status','file_path'];
+        $allowed = ['command_number','title','date_received','type','document_type','agency','budget','details','status','file_path'];
         $sets = [];
         $values = [];
         foreach ($allowed as $f) {

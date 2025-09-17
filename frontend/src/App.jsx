@@ -2,6 +2,7 @@ import React from 'react'
 import Dashboard from './components/Dashboard'
 import CommandForm from './components/CommandForm'
 import CommandList from './components/CommandList'
+import EvaluationList from './components/EvaluationList'
 
 export default function App(){
   const [view, setView] = React.useState('dashboard');
@@ -17,6 +18,7 @@ export default function App(){
             <button onClick={()=>setView('dashboard')} className={`px-4 py-2 rounded ${view==='dashboard' ? 'bg-blue-600 text-white' : 'bg-white border'}`}>หน้าหลัก</button>
             <button onClick={()=>setView('new')} className={`px-4 py-2 rounded ${view==='new' ? 'bg-blue-600 text-white' : 'bg-white border'}`}>เพิ่มคำสั่ง</button>
             <button onClick={()=>setView('list')} className={`px-4 py-2 rounded ${view==='list' ? 'bg-blue-600 text-white' : 'bg-white border'}`}>ประวัติ</button>
+            <button onClick={()=>setView('evaluation')} className={`px-4 py-2 rounded ${view==='evaluation' ? 'bg-blue-600 text-white' : 'bg-white border'}`}>ประเมิน</button>
           </nav>
         </div>
       </header>
@@ -25,6 +27,7 @@ export default function App(){
         {view === 'dashboard' && <Dashboard />}
         {view === 'new' && <CommandForm onSaved={()=>setView('dashboard')} />}
         {view === 'list' && <CommandList />}
+        {view === 'evaluation' && <EvaluationList />}
       </main>
     </div>
   )
