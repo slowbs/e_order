@@ -35,7 +35,8 @@ if (file_exists($envPath)) {
 // This logic switches the database based on which frontend version is making the request.
 // It checks the 'Origin' header sent by the browser.
 
-// The Vite dev server (test version) runs on port 5173.
+// The Vite dev server (test version) runs on port 5173. This is the most reliable
+// way to detect the environment, as it's not affected by server URL rewrites.
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $is_test_version = ($origin === 'http://localhost:5173');
 
