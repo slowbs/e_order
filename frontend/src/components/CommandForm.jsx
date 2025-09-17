@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { createCommand } from '../api'
 
-const defaultState = { command_number:'', title:'', date_received:'', type:'TOR', agency:'', details:'', status:'In Progress' }
+const defaultState = { command_number:'', title:'', date_received:'', document_type: 'คำสั่ง', type:'TOR', agency:'', details:'', status:'In Progress' }
 
 export default function CommandForm({ onSaved, initial = null, id = null, onCancel = null }){
   const [form, setForm] = useState(initial ? {...defaultState, ...initial} : defaultState);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const dateInputRef = useRef(null);
 
   function onChange(e){
     const { name, value } = e.target; setForm(prev=>({...prev,[name]:value}));
@@ -42,16 +43,37 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
   return (
   <form onSubmit={onSubmit} className="bg-white p-6 rounded-lg shadow-sm border">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* แถวที่ 1: ชนิดเอกสาร และ หมายเลขคำสั่ง */}
+        <label className="block"><div className="text-sm">ชนิดเอกสาร</div><select name="document_type" value={form.document_type} onChange={onChange} className="mt-1 w-full border p-2 rounded">
+          <option value="คำสั่ง">คำสั่ง</option>
+          <option value="บันทึกข้อความ">บันทึกข้อความ</option>
+        </select></label>
         <label className="block"><div className="text-sm">หมายเลขคำสั่ง</div><input name="command_number" value={form.command_number} onChange={onChange} className="mt-1 w-full border p-2 rounded" required /></label>
-        <label className="block"><div className="text-sm">ชื่อเรื่อง</div><input name="title" value={form.title} onChange={onChange} className="mt-1 w-full border p-2 rounded" required /></label>
-        <label className="block"><div className="text-sm">วันที่ได้รับคำสั่ง</div><input type="date" name="date_received" value={form.date_received} onChange={onChange} className="mt-1 w-full border p-2 rounded" required /></label>
+
+        {/* แถวที่ 2: วันที่ในเอกสาร และ ประเภทคำสั่ง */}
+        <label className="block cursor-pointer" onClick={() => dateInputRef.current?.showPicker()}>
+          <div className="text-sm">วันที่ในเอกสาร</div>
+          <input ref={dateInputRef} type="date" name="date_received" value={form.date_received} onChange={onChange}
+                 className="mt-1 w-full border p-2 rounded bg-white" required
+                 onClick={(e) => e.preventDefault()}
+          />
+        </label>
         <label className="block"><div className="text-sm">ประเภทคำสั่ง</div><select name="type" value={form.type} onChange={onChange} className="mt-1 w-full border p-2 rounded">
           <option value="TOR">TOR (ข้อกำหนด)</option>
           <option value="Evaluation">พิจารณาผล</option>
           <option value="Inspection">ตรวจรับ</option>
         </select></label>
+
+        {/* แถวที่ 3: ชื่อเรื่อง */}
+        <label className="block md:col-span-2"><div className="text-sm">ชื่อเรื่อง</div><textarea name="title" value={form.title} onChange={onChange} className="mt-1 w-full border p-2 rounded" required rows="3"></textarea></label>
+
+        {/* แถวที่ 4: หน่วยงาน และ สถานะ */}
         <label className="block"><div className="text-sm">หน่วยงาน</div><input name="agency" value={form.agency} onChange={onChange} className="mt-1 w-full border p-2 rounded" /></label>
-  <label className="block"><div className="text-sm">สถานะ</div><select name="status" value={form.status} onChange={onChange} className="mt-1 w-full border p-2 rounded"><option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option></select></label>
+        <label className="block"><div className="text-sm">สถานะ</div><select name="status" value={form.status} onChange={onChange} className="mt-1 w-full border p-2 rounded">
+          <option value="In Progress">กำลังดำเนินการ</option>
+          <option value="Completed">เสร็จสิ้น</option>
+          <option value="Cancelled">ยกเลิก</option>
+        </select></label>
         <label className="block md:col-span-2"><div className="text-sm">รายละเอียด</div><textarea name="details" value={form.details} onChange={onChange} className="mt-1 w-full border p-2 rounded" rows="4"></textarea></label>
         <label className="block md:col-span-2"><div className="text-sm">ไฟล์</div>
           {form.file_path && (

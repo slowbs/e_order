@@ -20,8 +20,16 @@ export default function CommandList(){
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           <input name="fiscal_year" placeholder="ปีงบ (เช่น 68)" onChange={onChange} className="border p-2 rounded" />
           <select name="fiscal_half" onChange={onChange} className="border p-2 rounded"><option value="">ปีงบประมาณ</option><option value="first_half">ต.ค.–มี.ค.</option><option value="second_half">เม.ย.–ก.ย.</option></select>
-          <select name="type" onChange={onChange} className="border p-2 rounded"><option value="">ทุกประเภท</option><option>TOR</option><option>Evaluation</option><option>Inspection</option></select>
-          <select name="status" onChange={onChange} className="border p-2 rounded"><option value="">สถานะการดำเนินการ</option><option>In Progress</option><option>Completed</option></select>
+          <select name="type" onChange={onChange} className="border p-2 rounded">
+            <option value="">ทุกประเภท</option>
+            <option value="TOR">TOR</option>
+            <option value="Evaluation">พิจารณาผล</option>
+            <option value="Inspection">ตรวจรับ</option>
+          </select>
+          <select name="status" onChange={onChange} className="border p-2 rounded">
+            <option value="">ทุกสถานะ</option>
+            <option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option><option value="Cancelled">ยกเลิก</option>
+          </select>
         </div>
   <div className="mt-2"><button onClick={load} className="px-3 py-1 bg-blue-600 text-white rounded">ค้นหา</button></div>
       </div>
@@ -37,8 +45,12 @@ export default function CommandList(){
                 <tr key={r.id} className="border-t">
                     <td className="p-2">{r.command_number}</td>
                     <td className="p-2">{r.title}</td>
-                    <td className="p-2">{typeToThai(r.type)}</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded text-xs ${r.status==='Completed'?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`}>{statusToThai(r.status)}</span></td>
+                    <td className="p-2">{typeToThai(r.type)}</td><td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
+                      r.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                      r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
+                      r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>{statusToThai(r.status)}</span></td>
                     <td className="p-2">{formatThaiDate(r.date_received)}</td>
                     <td className="p-2">{r.agency}</td>
                     <td className="p-2 text-right space-x-2">

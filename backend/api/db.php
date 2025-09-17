@@ -31,11 +31,21 @@ if (file_exists($envPath)) {
     }
 }
 
-// Read DB config from environment variables. Defaults are neutral/safe.
+// --- Database Selection Logic ---
+// This logic switches the database based on which frontend version is making the request.
+// It checks the 'Origin' header sent by the browser.
+
+// The Vite dev server (test version) runs on port 5173.
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$is_test_version = ($origin === 'http://localhost:5173');
+
+// Read general DB config from environment variables with sensible defaults.
 $DB_HOST = getenv('DB_HOST') ?: '127.0.0.1';
-$DB_NAME = getenv('DB_NAME') ?: 'e_order';
 $DB_USER = getenv('DB_USER') ?: 'root';
 $DB_PASS = getenv('DB_PASS') ?: '';
+
+// Select the database name based on the detected version.
+$DB_NAME = $is_test_version ? 'e_order_test' : 'e_order';
 
 try {
     $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME;charset=utf8mb4", $DB_USER, $DB_PASS, [

@@ -12,7 +12,8 @@ export function statusToThai(status) {
   if (!status) return '';
   const map = {
     'In Progress': 'กำลังดำเนินการ',
-    'Completed': 'เสร็จสิ้น'
+    'Completed': 'เสร็จสิ้น',
+    'Cancelled': 'ยกเลิก'
   };
   return map[status] || status;
 }
