@@ -5,15 +5,30 @@ import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 export default function EvaluationList(){
   const [filters, setFilters] = useState({});
   const [rows, setRows] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(10);
 
-  useEffect(()=>{ load(); }, []);
+  useEffect(()=>{ load(); }, [page]);
   async function load(){ 
-    const r = await fetchCommands(filters); 
-    // Ensure we always have an array before setting state
-    setRows(Array.isArray(r) ? r : []); 
+    const res = await fetchCommands({ ...filters, page, limit }); 
+    if (res && Array.isArray(res.data)) {
+      setRows(res.data);
+      setTotal(res.total);
+      setLimit(res.limit);
+    } else {
+      setRows([]);
+      setTotal(0);
+    }
   }
 
   function onChange(e){ const {name,value} = e.target; setFilters(prev=>({...prev,[name]:value})); }
+  function handleSearch() {
+    if (page !== 1) setPage(1);
+    else load();
+  }
+
+  const totalPages = Math.ceil(total / limit);
   
   return (
     <div>
@@ -33,7 +48,7 @@ export default function EvaluationList(){
             <option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option><option value="Cancelled">ยกเลิก</option>
           </select>
         </div>
-        <div className="mt-2"><button onClick={load} className="px-3 py-1 bg-blue-600 text-white rounded">ค้นหา</button></div>
+        <div className="mt-2"><button onClick={handleSearch} className="px-3 py-1 bg-blue-600 text-white rounded">ค้นหา</button></div>
       </div>
 
       {/* Table section - new layout */}
@@ -53,7 +68,7 @@ export default function EvaluationList(){
             <tbody>
               {rows && rows.map((r, index) => (
                 <tr key={r.id} className="border-t">
-                    <td className="p-2 text-center">{index + 1}</td>
+                    <td className="p-2 text-center">{(page - 1) * limit + index + 1}</td>
                     <td className="p-2">
                       {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number}
                     </td>
@@ -70,6 +85,15 @@ export default function EvaluationList(){
               ))}
             </tbody>
           </table>
+        </div>
+        {/* Pagination Controls */}
+        <div className="mt-4 flex justify-between items-center text-sm">
+          <div>แสดง {rows.length} จากทั้งหมด {total} รายการ</div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">ก่อนหน้า</button>
+            <span>หน้า {page} / {totalPages > 0 ? totalPages : 1}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || total === 0} className="px-3 py-1 border rounded disabled:opacity-50">ถัดไป</button>
+          </div>
         </div>
       </div>
     </div>

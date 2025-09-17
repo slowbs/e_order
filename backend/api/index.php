@@ -61,8 +61,14 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
     }
 
     if ($method === 'GET' && count($segments) === 1) {
-        // Filters: type, status, fiscal_year, fiscal_half
+        // Filters: type, status, fiscal_year, fiscal_half, page, limit
         $params = $_GET;
+
+        // Pagination
+        $page = isset($params['page']) ? max(1, intval($params['page'])) : 1;
+        $limit = isset($params['limit']) ? max(1, intval($params['limit'])) : 10; // Default 10 per page
+        $offset = ($page - 1) * $limit;
+
         $where = [];
         $values = [];
         if (!empty($params['type'])) { $where[] = '`type` = ?'; $values[] = $params['type']; }
@@ -70,13 +76,31 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
         if (!empty($params['fiscal_year'])) { $where[] = 'fiscal_year = ?'; $values[] = $params['fiscal_year']; }
         if (!empty($params['fiscal_half'])) { $where[] = 'fiscal_half = ?'; $values[] = $params['fiscal_half']; }
 
-        $sql = 'SELECT * FROM commands';
-        if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
-        $sql .= ' ORDER BY date_received DESC, id DESC LIMIT 500';
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($values);
+        $where_clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        // Get total count for pagination
+        $count_sql = 'SELECT COUNT(*) FROM commands' . $where_clause;
+        $count_stmt = $pdo->prepare($count_sql);
+        $count_stmt->execute($values);
+        $total_rows = $count_stmt->fetchColumn();
+
+        // Get paginated data
+        $data_sql = 'SELECT * FROM commands' . $where_clause . ' ORDER BY date_received DESC, id DESC LIMIT ? OFFSET ?';
+        $stmt = $pdo->prepare($data_sql);
+
+        // Bind all parameters with correct types
+        $param_index = 1;
+        foreach ($values as $value) {
+            $stmt->bindValue($param_index++, $value); // Bind filter values
+        }
+        $stmt->bindValue($param_index++, $limit, PDO::PARAM_INT); // Bind LIMIT
+        $stmt->bindValue($param_index++, $offset, PDO::PARAM_INT); // Bind OFFSET
+
+        $stmt->execute();
         $rows = $stmt->fetchAll();
-        echo json_encode($rows);
+
+        // Return structured response
+        echo json_encode(['data' => $rows, 'total' => (int)$total_rows, 'page' => $page, 'limit' => $limit]);
         exit;
     }
 

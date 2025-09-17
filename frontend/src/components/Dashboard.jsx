@@ -5,16 +5,24 @@ import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 export default function Dashboard(){
   const [summary, setSummary] = useState({});
   const [latest, setLatest] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit, setLimit] = useState(10);
 
-  useEffect(()=>{ loadSummary(); loadLatest(); }, []);
+  useEffect(()=>{ loadSummary(); }, []);
+  useEffect(()=>{ loadLatest(); }, [page]); // Reload when page changes
 
   async function loadSummary(){
     const s = await fetchSummary();
     setSummary(s);
   }
   async function loadLatest(){
-    const l = await fetchCommands({});
-    setLatest(l.slice(0,20));
+    const res = await fetchCommands({ page, limit });
+    if (res && Array.isArray(res.data)) {
+      setLatest(res.data);
+      setTotal(res.total);
+      setLimit(res.limit);
+    }
   }
 
   const base = (import.meta.env.VITE_API_BASE||'http://localhost/e_order/backend/api').replace(/\/api\/?$/,'');
@@ -24,6 +32,8 @@ export default function Dashboard(){
     { key: 'Evaluation', label: 'พิจารณาผล' },
     { key: 'Inspection', label: 'ตรวจรับ' },
   ];
+
+  const totalPages = Math.ceil(total / limit);
 
   return (
     <div>
@@ -63,6 +73,15 @@ export default function Dashboard(){
               ))}
             </tbody>
           </table>
+        </div>
+        {/* Pagination Controls */}
+        <div className="mt-4 flex justify-between items-center text-sm">
+          <div>แสดง {latest.length} จากทั้งหมด {total} รายการ</div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 border rounded disabled:opacity-50">ก่อนหน้า</button>
+            <span>หน้า {page} / {totalPages > 0 ? totalPages : 1}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || total === 0} className="px-3 py-1 border rounded disabled:opacity-50">ถัดไป</button>
+          </div>
         </div>
       </section>
     </div>
