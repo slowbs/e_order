@@ -51,7 +51,7 @@ export default function Dashboard(){
               <tr className="text-left text-xs text-gray-500"><th className="p-2">หมายเลข</th><th className="p-2">ชื้อเรื่อง</th><th className="p-2">ประเภท</th><th className="p-2">สถานะ</th><th className="p-2">วันที่</th><th className="p-2">File</th></tr>
             </thead>
             <tbody>
-              {latest.map(r=> (
+              {latest && latest.map(r=> (
                 <tr key={r.id} className="border-t">
                   <td className="p-2">{r.command_number}</td>
                   <td className="p-2">{r.title}</td>

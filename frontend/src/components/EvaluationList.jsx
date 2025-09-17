@@ -7,10 +7,14 @@ export default function EvaluationList(){
   const [rows, setRows] = useState([]);
 
   useEffect(()=>{ load(); }, []);
-  async function load(){ const r = await fetchCommands(filters); setRows(r); }
+  async function load(){ 
+    const r = await fetchCommands(filters); 
+    // Ensure we always have an array before setting state
+    setRows(Array.isArray(r) ? r : []); 
+  }
 
   function onChange(e){ const {name,value} = e.target; setFilters(prev=>({...prev,[name]:value})); }
-
+  
   return (
     <div>
       {/* Filter section - same as CommandList */}
@@ -41,17 +45,20 @@ export default function EvaluationList(){
                 <th className="p-2 w-16">ลำดับ</th>
                 <th className="p-2">รายการ</th>
                 <th className="p-2 w-32">ประเภท</th>
+                <th className="p-2 w-32">วันที่</th>
                 <th className="p-2 w-40 text-right">งบประมาณ</th>
                 <th className="p-2 w-40">สถานะ</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, index) => (
+              {rows && rows.map((r, index) => (
                 <tr key={r.id} className="border-t">
-                    <td className="p-2 text-center">{index + 1}</td><td className="p-2">
-                      {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number} ลงวันที่ {formatThaiDate(r.date_received)}
+                    <td className="p-2 text-center">{index + 1}</td>
+                    <td className="p-2">
+                      {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number}
                     </td>
                     <td className="p-2">{typeToThai(r.type)}</td>
+                    <td className="p-2">{formatThaiDate(r.date_received)}</td>
                     <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
                     <td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
                       r.status === 'Completed' ? 'bg-green-100 text-green-700' :
