@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { createCommand } from '../api'
 
-const defaultState = { command_number:'', title:'', date_received:'', document_type: 'คำสั่ง', type:'TOR', agency:'', details:'', status:'In Progress' }
+const defaultState = { command_number:'', title:'', date_received:'', document_type: 'คำสั่ง', type:'TOR', agency:'กองสาธารณสุข', budget: '', details:'', status:'In Progress' }
 
 export default function CommandForm({ onSaved, initial = null, id = null, onCancel = null }){
   const [form, setForm] = useState(initial ? {...defaultState, ...initial} : defaultState);
@@ -67,8 +67,11 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
         {/* แถวที่ 3: ชื่อเรื่อง */}
         <label className="block md:col-span-2"><div className="text-sm">ชื่อเรื่อง</div><textarea name="title" value={form.title} onChange={onChange} className="mt-1 w-full border p-2 rounded" required rows="3"></textarea></label>
 
-        {/* แถวที่ 4: หน่วยงาน และ สถานะ */}
+        {/* แถวที่ 4: หน่วยงาน และ งบประมาณ */}
         <label className="block"><div className="text-sm">หน่วยงาน</div><input name="agency" value={form.agency} onChange={onChange} className="mt-1 w-full border p-2 rounded" /></label>
+        <label className="block"><div className="text-sm">งบประมาณ (บาท)</div><input type="number" name="budget" value={form.budget} onChange={onChange} className="mt-1 w-full border p-2 rounded" placeholder="0.00" step="0.01" /></label>
+
+        {/* แถวที่ 5: สถานะ */}
         <label className="block"><div className="text-sm">สถานะ</div><select name="status" value={form.status} onChange={onChange} className="mt-1 w-full border p-2 rounded">
           <option value="In Progress">กำลังดำเนินการ</option>
           <option value="Completed">เสร็จสิ้น</option>

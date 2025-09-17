@@ -38,14 +38,16 @@ export default function CommandList(){
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500"><th className="p-2">หมายเลข</th><th className="p-2">ชื่อเรื่อง</th><th className="p-2">ประเภท</th><th className="p-2">สถานะ</th><th className="p-2">วันที่</th><th className="p-2">หน่วยงาน</th><th className="p-2"></th></tr>
+              <tr className="text-left text-xs text-gray-500"><th className="p-2">หมายเลข</th><th className="p-2">ชื่อเรื่อง</th><th className="p-2">ประเภท</th><th className="p-2">งบประมาณ</th><th className="p-2">สถานะ</th><th className="p-2">วันที่</th><th className="p-2">หน่วยงาน</th><th className="p-2"></th></tr>
             </thead>
             <tbody>
               {rows.map(r=> (
                 <tr key={r.id} className="border-t">
                     <td className="p-2">{r.command_number}</td>
                     <td className="p-2">{r.title}</td>
-                    <td className="p-2">{typeToThai(r.type)}</td><td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
+                    <td className="p-2">{typeToThai(r.type)}</td>
+                    <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                    <td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
                       r.status === 'Completed' ? 'bg-green-100 text-green-700' :
                       r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
                       r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
