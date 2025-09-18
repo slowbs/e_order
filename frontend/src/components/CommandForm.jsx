@@ -21,7 +21,12 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
         // update
         if (file) {
           const fd = new FormData();
-          for (const k in form) fd.append(k, form[k]);
+          // Ensure empty budget becomes an empty string, not 'null' string
+          for (const k in form) {
+            const value = form[k];
+            // Append empty string for null/undefined to avoid sending "null" or "undefined"
+            fd.append(k, value === null || value === undefined ? '' : value);
+          }
           fd.append('file', file);
           await import('../api').then(m=>m.updateCommand(id, fd));
         } else {

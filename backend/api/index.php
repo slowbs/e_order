@@ -164,11 +164,13 @@ if (!empty($segments) && $segments[0] === 'commands') {
         $values = [];
         foreach ($allowed as $f) {
             if (isset($data[$f])) {
-                $sets[] = "$f = ?";
-                if ($f === 'budget' && $data[$f] === '') {
-                    $data[$f] = null;
+                $current_value = $data[$f];
+                // Ensure empty budget string becomes a proper PHP null for the database
+                if ($f === 'budget' && $current_value === '') {
+                    $current_value = null;
                 }
-                $values[] = $data[$f];
+                $sets[] = "$f = ?";
+                $values[] = $current_value;
             }
         }
 
