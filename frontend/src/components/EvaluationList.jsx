@@ -1,27 +1,37 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { fetchCommands } from '../api'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 
 export default function EvaluationList(){
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({ type: 'Evaluation' });
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(()=>{ load(); }, [page]);
-  async function load(){ 
-    const res = await fetchCommands({ ...filters, page, limit, q: searchTerm }); 
-    if (res && Array.isArray(res.data)) {
-      setRows(res.data);
-      setTotal(res.total);
-      setLimit(res.limit);
-    } else {
-      setRows([]);
-      setTotal(0);
-    }
-  }
+  const load = useCallback(async () => {
+      const res = await fetchCommands({ ...filters, page, limit, q: searchTerm });
+      if (res && Array.isArray(res.data)) {
+          setRows(res.data);
+          setTotal(res.total);
+          setLimit(res.limit);
+      } else {
+          setRows([]);
+          setTotal(0);
+      }
+  }, [filters, page, limit, searchTerm]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Listen for global data updates
+  useEffect(() => {
+      const handleUpdate = () => load();
+      window.addEventListener('commands-updated', handleUpdate);
+      return () => {
+          window.removeEventListener('commands-updated', handleUpdate);
+      };
+  }, [load]);
 
   function onChange(e){ const {name,value} = e.target; setFilters(prev=>({...prev,[name]:value})); }
   function handleSearch() {
@@ -30,7 +40,7 @@ export default function EvaluationList(){
   }
 
   const totalPages = Math.ceil(total / limit);
-  
+
   return (
     <div>
       {/* Filter section - same as CommandList */}

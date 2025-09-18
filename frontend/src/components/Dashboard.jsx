@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { fetchSummary, fetchCommands } from '../api'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 
@@ -10,27 +10,38 @@ export default function Dashboard() {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => { loadSummary(); }, []);
-  useEffect(() => { loadLatest(); }, [page]); // Reload when page changes
+  const loadData = useCallback(async () => {
+      // Fetch both summary and latest commands
+      const [summaryData, latestData] = await Promise.all([
+          fetchSummary(),
+          fetchCommands({ page, limit, q: searchTerm })
+      ]);
 
-  async function loadSummary() {
-    const s = await fetchSummary();
-    setSummary(s);
-  }
-  async function loadLatest() {
-    const res = await fetchCommands({ page, limit, q: searchTerm });
-    if (res && Array.isArray(res.data)) {
-      setLatest(res.data);
-      setTotal(res.total);
-      setLimit(res.limit);
-    }
-  }
+      setSummary(summaryData);
+
+      if (latestData && Array.isArray(latestData.data)) {
+          setLatest(latestData.data);
+          setTotal(latestData.total);
+          setLimit(latestData.limit);
+      }
+  }, [page, limit, searchTerm]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Listen for global data updates
+  useEffect(() => {
+      const handleUpdate = () => loadData();
+      window.addEventListener('commands-updated', handleUpdate);
+      return () => {
+          window.removeEventListener('commands-updated', handleUpdate);
+      };
+  }, [loadData]);
 
   function handleSearch() {
     if (page !== 1) {
       setPage(1); // This will trigger useEffect and reload
     } else {
-      loadLatest(); // If already on page 1, just reload
+      loadData(); // If already on page 1, just reload
     }
   }
 

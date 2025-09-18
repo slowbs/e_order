@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { fetchCommands, deleteCommand } from '../api'
 import { api } from '../api'
 import CommandForm from './CommandForm'
@@ -13,21 +13,32 @@ export default function CommandList(){
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(()=>{ load(); }, [page]);
-  async function load(){ 
-    const res = await fetchCommands({ ...filters, page, limit, q: searchTerm }); 
-    if (res && Array.isArray(res.data)) {
-      setRows(res.data);
-      setTotal(res.total);
-      setLimit(res.limit);
-    } else {
-      setRows([]);
-      setTotal(0);
-    }
-  }
+  const load = useCallback(async () => {
+      const res = await fetchCommands({ ...filters, page, limit, q: searchTerm });
+      if (res && Array.isArray(res.data)) {
+          setRows(res.data);
+          setTotal(res.total);
+          setLimit(res.limit);
+      } else {
+          setRows([]);
+          setTotal(0);
+      }
+  }, [filters, page, limit, searchTerm]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Listen for global data updates (e.g., after creating a new command)
+  useEffect(() => {
+      const handleUpdate = () => load();
+      window.addEventListener('commands-updated', handleUpdate);
+      return () => {
+          window.removeEventListener('commands-updated', handleUpdate);
+      };
+  }, [load]);
 
   function onChange(e){ const {name,value} = e.target; setFilters(prev=>({...prev,[name]:value})); }
   function handleSearch() {

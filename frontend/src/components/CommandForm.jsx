@@ -37,6 +37,8 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
         for (const k in form) fd.append(k, form[k]);
         if (file) fd.append('file', file);
         const res = await createCommand(fd);
+        // Dispatch a global event to notify other components to reload data
+        window.dispatchEvent(new CustomEvent('commands-updated'));
       }
       toast.success('บันทึกข้อมูลเรียบร้อยแล้ว');
       setForm(defaultState); setFile(null);
