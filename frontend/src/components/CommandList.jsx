@@ -68,30 +68,47 @@ export default function CommandList(){
 
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-fixed">
+          <table className="w-full text-sm table-fixed border border-slate-200">
             <thead>
-              <tr className="text-xs text-slate-500 bg-slate-50 border-b"><th className="p-3 font-medium w-[10%] text-center border-r">หมายเลข</th><th className="p-3 font-medium w-[25%] text-left border-r">ชื่อเรื่อง</th><th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th><th className="p-3 font-medium w-[15%] text-right border-r">งบประมาณ</th><th className="p-3 font-medium w-[10%] text-center border-r">สถานะ</th><th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th><th className="p-3 font-medium w-[10%] text-left border-r">หน่วยงาน</th><th className="p-3 font-medium w-[10%] text-center"></th></tr>
+              <tr className="text-xs text-slate-500 bg-slate-50 divide-x divide-slate-200 border-b border-slate-200">
+                <th className="p-3 font-medium w-[12%] text-center">หมายเลข</th>
+                <th className="p-3 font-medium w-[40%] text-left">ชื่อเรื่อง</th>
+                <th className="p-3 font-medium w-[10%] text-center">ประเภท</th>
+                <th className="p-3 font-medium w-[10%] text-right">งบประมาณ</th>
+                <th className="p-3 font-medium w-[14%] text-center">สถานะ</th>
+                <th className="p-3 font-medium w-[12%] text-center">วันที่</th>
+                <th className="p-3 font-medium w-[9%] text-center">หน่วยงาน</th>
+                <th className="p-3 font-medium w-[8%] text-center">Action</th></tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200">
               {rows && rows.map(r=> (
-                <tr key={r.id} className="border-t">
-                    <td className="p-2 text-center border-r">{r.command_number}</td>
-                    <td className="p-2 text-left border-r truncate">{r.title}</td>
-                    <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
-                    <td className="p-2 text-right border-r">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                    <td className="p-2 text-center border-r"><span className={`px-2 py-1 rounded text-xs ${
-                      r.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                      r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
-                      r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>{statusToThai(r.status)}</span></td>
-                    <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
-                    <td className="p-2 text-left border-r">{r.agency}</td>
-                    <td className="p-2 text-center space-x-2">
-                      {r.file_path && (
-                        <a className="px-3 py-1 bg-green-50 text-green-700 rounded text-xs" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
-                      )}
-                      <button onClick={() => openEditModal(r)} className="px-3 py-1 bg-yellow-50 text-yellow-800 rounded text-xs">แก้ไข</button>
+                <tr key={r.id} className="divide-x divide-slate-200">
+                    <td className="p-2 text-center">{r.command_number}</td>
+                    <td className="p-2 text-left">{r.title}</td>
+                    <td className="p-2 text-center">{typeToThai(r.type)}</td>
+                    <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                    <td className="p-2 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        r.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                        r.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
+                        r.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                        <svg className={`-ml-0.5 mr-1.5 h-2 w-2 ${ r.status === 'Completed' ? 'text-green-400' : r.status === 'In Progress' ? 'text-amber-400' : r.status === 'Cancelled' ? 'text-red-400' : 'text-slate-400' }`} fill="currentColor" viewBox="0 0 8 8">
+                          <circle cx={4} cy={4} r={3} />
+                        </svg>
+                        {statusToThai(r.status)}
+                      </span>
+                    </td>
+                    <td className="p-2 text-center">{formatThaiDate(r.date_received)}</td>
+                    <td className="p-2 text-center">{r.agency}</td>
+                    <td className="p-2">
+                      <div className="flex flex-wrap justify-center items-center gap-1">
+                        {r.file_path && (
+                          <a className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-blue-600" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
+                        )}
+                        <button onClick={() => openEditModal(r)} className="inline-block px-3 py-1 bg-orange-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-orange-600">แก้ไข</button>
+                      </div>
                     </td>
                   </tr>
               ))}

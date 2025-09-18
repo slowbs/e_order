@@ -97,25 +97,37 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse table-fixed">
+          <table className="w-full text-sm border-collapse table-fixed border border-slate-200">
             <thead>
-              <tr className="text-xs text-slate-500 bg-slate-50 border-b border-t">
-                <th className="p-3 font-medium w-[12%] text-center border-r border-l">หมายเลข</th>
-                <th className="p-3 font-medium w-[50%] text-center border-r">ชื้อเรื่อง</th>
-                <th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th>
-                <th className="p-3 font-medium w-[10%] text-center border-r">สถานะ</th>
-                <th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th>
-                <th className="p-3 font-medium w-[8%] text-center border-r">File</th></tr>
+              <tr className="text-xs text-slate-500 bg-slate-50 divide-x divide-slate-200 border-b border-slate-200">
+                <th className="p-3 font-medium w-[12%] text-center">หมายเลข</th>
+                <th className="p-3 font-medium w-[50%] text-center">ชื้อเรื่อง</th>
+                <th className="p-3 font-medium w-[10%] text-center">ประเภท</th>
+                <th className="p-3 font-medium w-[12%] text-center">สถานะ</th>
+                <th className="p-3 font-medium w-[10%] text-center">วันที่</th>
+                <th className="p-3 font-medium w-[8%] text-center">File</th></tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200">
               {latest && latest.map(r => (
-                <tr key={r.id} className="border-t border-b">
-                  <td className="p-2 text-center border-r border-l">{r.command_number}</td>
-                  <td className="p-2 border-r">{r.title}</td>
-                  <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
-                  <td className="p-2 text-center border-r">{statusToThai(r.status)}</td>
-                  <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
-                  <td className="p-2 text-center border-r">{r.file_path ? <a className="text-blue-600" href={`${base}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
+                <tr key={r.id} className="divide-x divide-slate-200">
+                  <td className="p-2 text-center">{r.command_number}</td>
+                  <td className="p-2">{r.title}</td>
+                  <td className="p-2 text-center">{typeToThai(r.type)}</td>
+                  <td className="p-2 text-center">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        r.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                        r.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
+                        r.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                      <svg className={`-ml-0.5 mr-1.5 h-2 w-2 ${ r.status === 'Completed' ? 'text-green-400' : r.status === 'In Progress' ? 'text-amber-400' : r.status === 'Cancelled' ? 'text-red-400' : 'text-slate-400' }`} fill="currentColor" viewBox="0 0 8 8">
+                        <circle cx={4} cy={4} r={3} />
+                      </svg>
+                      {statusToThai(r.status)}
+                    </span>
+                  </td>
+                  <td className="p-2 text-center">{formatThaiDate(r.date_received)}</td>
+                  <td className="p-2 text-center">{r.file_path ? <a className="text-blue-600" href={`${base}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
                 </tr>
               ))}
             </tbody>

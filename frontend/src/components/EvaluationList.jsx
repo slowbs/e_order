@@ -60,33 +60,40 @@ export default function EvaluationList(){
       {/* Table section - new layout */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-fixed">
+          <table className="w-full text-sm table-fixed border border-slate-200">
             <thead>
-              <tr className="text-xs text-slate-500 bg-slate-50 border-b">
-                <th className="p-3 font-medium w-[5%] text-center border-r">ลำดับ</th>
-                <th className="p-3 font-medium w-[50%] text-left border-r">รายการ</th>
-                <th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th>
-                <th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th>
-                <th className="p-3 font-medium w-[15%] text-right border-r">งบประมาณ</th>
-                <th className="p-3 font-medium w-[10%] text-center">สถานะ</th>
+              <tr className="text-xs text-slate-500 bg-slate-50 divide-x divide-slate-200 border-b border-slate-200">
+                <th className="p-3 font-medium w-[5%] text-center">ลำดับ</th>
+                <th className="p-3 font-medium w-[60%] text-left">รายการ</th>
+                <th className="p-3 font-medium w-[10%] text-center">ประเภท</th>
+                <th className="p-3 font-medium w-[10%] text-center">วันที่</th>
+                <th className="p-3 font-medium w-[12%] text-right">งบประมาณ</th>
+                <th className="p-3 font-medium w-[14%] text-center">สถานะ</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200">
               {rows && rows.map((r, index) => (
-                <tr key={r.id} className="border-t">
-                    <td className="p-2 text-center border-r">{(page - 1) * limit + index + 1}</td>
-                    <td className="p-2 text-left border-r truncate">
+                <tr key={r.id} className="divide-x divide-slate-200">
+                    <td className="p-2 text-center">{(page - 1) * limit + index + 1}</td>
+                    <td className="p-2 text-left">
                       {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number}
                     </td>
-                    <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
-                    <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
-                    <td className="p-2 text-right border-r">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                    <td className="p-2 text-center"><span className={`px-2 py-1 rounded text-xs ${
-                      r.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                      r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
-                      r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>{statusToThai(r.status)}</span></td>
+                    <td className="p-2 text-center">{typeToThai(r.type)}</td>
+                    <td className="p-2 text-center">{formatThaiDate(r.date_received)}</td>
+                    <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                    <td className="p-2 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        r.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                        r.status === 'In Progress' ? 'bg-amber-100 text-amber-800' :
+                        r.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-slate-100 text-slate-800'
+                      }`}>
+                        <svg className={`-ml-0-5 mr-1.5 h-2 w-2 ${ r.status === 'Completed' ? 'text-green-400' : r.status === 'In Progress' ? 'text-amber-400' : r.status === 'Cancelled' ? 'text-red-400' : 'text-slate-400' }`} fill="currentColor" viewBox="0 0 8 8">
+                          <circle cx={4} cy={4} r={3} />
+                        </svg>
+                        {statusToThai(r.status)}
+                      </span>
+                    </td>
                   </tr>
               ))}
             </tbody>
