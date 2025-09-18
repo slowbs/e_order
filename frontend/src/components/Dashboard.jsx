@@ -42,21 +42,44 @@ export default function Dashboard(){
     { key: 'Inspection', label: 'ตรวจรับ' },
   ];
 
+  const icons = {
+    TOR: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+    Evaluation: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m--6 9l2 2 4-4" />
+      </svg>
+    ),
+    Inspection: (
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 10.5a.5.5 0 01.5-.5h3a.5.5 0 010 1h-3a.5.5 0 01-.5-.5z" />
+      </svg>
+    ),
+  };
+
   const totalPages = Math.ceil(total / limit);
 
   return (
     <div>
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {types.map(t=> (
-          <div key={t.key} className="bg-white p-5 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-sm text-gray-600">{t.label}</h3>
-            <div className="mt-3 flex items-baseline gap-4">
-              <div className="text-3xl font-bold">{summary[t.key]?.['In Progress'] ?? 0}</div>
-              <div className="text-sm text-gray-500">กำลังดำเนินการ</div>
+          <div key={t.key} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
+            <div className="flex justify-between items-start">
+              <h3 className="font-semibold text-slate-700">{t.label}</h3>
+              <div className="p-2 bg-slate-100 rounded-lg text-slate-500">{icons[t.key]}</div>
             </div>
-            <div className="mt-2 flex items-baseline gap-4">
-              <div className="text-3xl font-bold">{summary[t.key]?.['Completed'] ?? 0}</div>
-              <div className="text-sm text-gray-500">เสร็จสิ้น</div>
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-3xl font-bold text-amber-500">{summary[t.key]?.['In Progress'] ?? 0}</div>
+                <div className="text-sm text-slate-500">กำลังดำเนินการ</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-green-500">{summary[t.key]?.['Completed'] ?? 0}</div>
+                <div className="text-sm text-slate-500">เสร็จสิ้น</div>
+              </div>
             </div>
           </div>
         ))}
@@ -64,7 +87,7 @@ export default function Dashboard(){
 
       <section className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-          <h3 className="font-semibold">คำสั่งล่าสุด</h3>
+          <h3 className="font-semibold text-lg text-slate-800">คำสั่งล่าสุด</h3>
           <div className="flex items-center gap-2 mt-2 md:mt-0">
             <input 
               type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} 
@@ -76,7 +99,7 @@ export default function Dashboard(){
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-xs text-gray-500"><th className="p-2">หมายเลข</th><th className="p-2">ชื้อเรื่อง</th><th className="p-2">ประเภท</th><th className="p-2">สถานะ</th><th className="p-2">วันที่</th><th className="p-2">File</th></tr>
+              <tr className="text-left text-xs text-slate-500 bg-slate-50"><th className="p-3 font-medium">หมายเลข</th><th className="p-3 font-medium">ชื้อเรื่อง</th><th className="p-3 font-medium">ประเภท</th><th className="p-3 font-medium">สถานะ</th><th className="p-3 font-medium">วันที่</th><th className="p-3 font-medium">File</th></tr>
             </thead>
             <tbody>
               {latest && latest.map(r=> (

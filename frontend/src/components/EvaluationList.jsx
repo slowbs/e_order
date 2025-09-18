@@ -62,13 +62,13 @@ export default function EvaluationList(){
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500">
-                <th className="p-2 w-16">ลำดับ</th>
-                <th className="p-2">รายการ</th>
-                <th className="p-2 w-32">ประเภท</th>
-                <th className="p-2 w-32">วันที่</th>
-                <th className="p-2 w-40 text-right">งบประมาณ</th>
-                <th className="p-2 w-40">สถานะ</th>
+              <tr className="text-left text-xs text-slate-500 bg-slate-50">
+                <th className="p-3 font-medium w-16">ลำดับ</th>
+                <th className="p-3 font-medium">รายการ</th>
+                <th className="p-3 font-medium w-32">ประเภท</th>
+                <th className="p-3 font-medium w-32">วันที่</th>
+                <th className="p-3 font-medium w-40 text-right">งบประมาณ</th>
+                <th className="p-3 font-medium w-40">สถานะ</th>
               </tr>
             </thead>
             <tbody>

@@ -63,7 +63,7 @@ export default function CommandList(){
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-gray-500"><th className="p-2">หมายเลข</th><th className="p-2">ชื่อเรื่อง</th><th className="p-2">ประเภท</th><th className="p-2">งบประมาณ</th><th className="p-2">สถานะ</th><th className="p-2">วันที่</th><th className="p-2">หน่วยงาน</th><th className="p-2"></th></tr>
+              <tr className="text-left text-xs text-slate-500 bg-slate-50"><th className="p-3 font-medium">หมายเลข</th><th className="p-3 font-medium">ชื่อเรื่อง</th><th className="p-3 font-medium">ประเภท</th><th className="p-3 font-medium text-right">งบประมาณ</th><th className="p-3 font-medium">สถานะ</th><th className="p-3 font-medium">วันที่</th><th className="p-3 font-medium">หน่วยงาน</th><th className="p-3 font-medium"></th></tr>
             </thead>
             <tbody>
               {rows && rows.map(r=> (
