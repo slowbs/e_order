@@ -3,7 +3,7 @@ import { fetchCommands } from '../api'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 
 export default function EvaluationList(){
-  const [filters, setFilters] = useState({ type: 'Evaluation' });
+  const [filters, setFilters] = useState({});
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -86,7 +86,7 @@ export default function EvaluationList(){
                 <tr key={r.id} className="divide-x divide-slate-200">
                     <td className="p-2 text-center">{(page - 1) * limit + index + 1}</td>
                     <td className="p-2 text-left">
-                      {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number}
+                      {r.details ? `${r.details} ` : ''}ตาม{r.document_type}เลขที่ {r.command_number} ลงวันที่ {formatThaiDate(r.date_received)}
                     </td>
                     <td className="p-2 text-center">{typeToThai(r.type)}</td>
                     <td className="p-2 text-center">{formatThaiDate(r.date_received)}</td>
