@@ -12,17 +12,16 @@ require_once __DIR__ . '/helpers.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
 
-// Trim query string
-if (false !== $qpos = strpos($uri, '?')) $uri = substr($uri, 0, $qpos);
-// Remove base folder if .htaccess rewrote to api/index.php
-$base = dirname($_SERVER['SCRIPT_NAME']);
-if (strpos($uri, $base) === 0) $path = substr($uri, strlen($base)); else $path = $uri;
+// --- Simplified Path Parsing (with .htaccess) ---
+// With `AcceptPathInfo On` in .htaccess, PATH_INFO becomes the most reliable
+// source for the URL path segment that comes after the script name.
+$path = $_SERVER['PATH_INFO'] ?? '';
 $path = trim($path, '/');
 
 $segments = $path === '' ? [] : explode('/', $path);
 
 // Routing
-if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['REQUEST_URI'], 'commands')!==false)) {
+if (!empty($segments) && $segments[0] === 'commands') {
     // /commands or /commands/:id
     if ($method === 'POST' && count($segments) === 1) {
         // Support multipart/form-data for file uploads
@@ -205,7 +204,7 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
 
 // Serve uploaded files directly when path starts with uploads/
 // e.g. GET /uploads/<filename>
-if ($segments[0] === 'uploads' && isset($segments[1]) && $method === 'GET') {
+if (!empty($segments) && $segments[0] === 'uploads' && isset($segments[1]) && $method === 'GET') {
     $filename = basename($segments[1]);
     $full = __DIR__ . '/../uploads/' . $filename;
     if (!file_exists($full)) { http_response_code(404); echo json_encode(['error'=>'File not found']); exit; }
@@ -219,7 +218,7 @@ if ($segments[0] === 'uploads' && isset($segments[1]) && $method === 'GET') {
     exit;
 }
 
-if ($segments[0] === 'summary') {
+if (!empty($segments) && $segments[0] === 'summary') {
     // Summarize number of commands by type and status for fiscal_year (optional param)
     $fy = $_GET['fiscal_year'] ?? null;
     $where = '';
