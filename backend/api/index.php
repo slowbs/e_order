@@ -36,7 +36,7 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
         $type = $data['type'] ?? null;
         $document_type = $data['document_type'] ?? 'คำสั่ง';
         $agency = $data['agency'] ?? null;
-        $budget = $data['budget'] ?? null;
+        $budget = (isset($data['budget']) && $data['budget'] !== '') ? $data['budget'] : null;
         $details = $data['details'] ?? null;
         $status = $data['status'] ?? 'In Progress';
 
@@ -50,14 +50,24 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
 
         $file_path = handle_file_upload('file');
 
-        $stmt = $pdo->prepare('INSERT INTO commands (command_number,title,date_received,`type`,document_type,agency,budget,details,`status`,fiscal_year,fiscal_half,file_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
-        $stmt->execute([$command_number,$title,$date_received,$type,$document_type,$agency,$budget,$details,$status,$fiscal_year,$fiscal_half,$file_path]);
-        $id = $pdo->lastInsertId();
-        $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        echo json_encode($row);
-        exit;
+        try {
+            $stmt = $pdo->prepare('INSERT INTO commands (command_number,title,date_received,`type`,document_type,agency,budget,details,`status`,fiscal_year,fiscal_half,file_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+            $stmt->execute([$command_number,$title,$date_received,$type,$document_type,$agency,$budget,$details,$status,$fiscal_year,$fiscal_half,$file_path]);
+            $id = $pdo->lastInsertId();
+            $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            echo json_encode($row);
+            exit;
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error during command creation', 'message' => $e->getMessage()]);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Server error during command creation', 'message' => $e->getMessage()]);
+            exit;
+        }
     }
 
     if ($method === 'GET' && count($segments) === 1) {
@@ -156,6 +166,9 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
         foreach ($allowed as $f) {
             if (isset($data[$f])) {
                 $sets[] = "$f = ?";
+                if ($f === 'budget' && $data[$f] === '') {
+                    $data[$f] = null;
+                }
                 $values[] = $data[$f];
             }
         }
@@ -166,16 +179,26 @@ if ($segments[0] === 'commands' || (count($segments) === 0 && strpos($_SERVER['R
             $sets[] = 'fiscal_half = ?'; $values[] = $fh;
         }
 
-        if (!$sets) { http_response_code(400); echo json_encode(['error'=>'No fields to update']); exit; }
-        $values[] = $id;
-        $sql = 'UPDATE commands SET ' . implode(', ', $sets) . ' WHERE id = ?';
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($values);
-        $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
-        $stmt->execute([$id]);
-        $row = $stmt->fetch();
-        echo json_encode($row);
-        exit;
+        try {
+            if (!$sets) { http_response_code(400); echo json_encode(['error'=>'No fields to update']); exit; }
+            $values[] = $id;
+            $sql = 'UPDATE commands SET ' . implode(', ', $sets) . ' WHERE id = ?';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($values);
+            $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            echo json_encode($row);
+            exit;
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error during command update', 'message' => $e->getMessage()]);
+            exit;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Server error during command update', 'message' => $e->getMessage()]);
+            exit;
+        }
     }
 }
 
