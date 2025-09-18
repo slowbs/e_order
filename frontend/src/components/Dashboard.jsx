@@ -97,15 +97,15 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse table-fixed">
             <thead>
               <tr className="text-left text-xs text-slate-500 bg-slate-50">
-                <th className="p-3 font-medium">หมายเลข</th>
-                <th className="p-3 font-medium">ชื้อเรื่อง</th>
-                <th className="p-3 font-medium">ประเภท</th>
-                <th className="p-3 font-medium">สถานะ</th>
-                <th className="p-3 font-medium">วันที่</th>
-                <th className="p-3 font-medium">File</th></tr>
+                <th className="p-3 font-medium w-[10%]">หมายเลข</th>
+                <th className="p-3 font-medium w-[50%]">ชื้อเรื่อง</th>
+                <th className="p-3 font-medium w-[10%]">ประเภท</th>
+                <th className="p-3 font-medium w-[10%]">สถานะ</th>
+                <th className="p-3 font-medium w-[10%]">วันที่</th>
+                <th className="p-3 font-medium w-[5%]">File</th></tr>
             </thead>
             <tbody>
               {latest && latest.map(r => (
