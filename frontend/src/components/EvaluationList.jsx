@@ -37,7 +37,7 @@ export default function EvaluationList(){
       <div className="bg-white p-4 rounded shadow mb-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
           <input name="fiscal_year" placeholder="ปีงบ (เช่น 68)" onChange={onChange} className="border p-2 rounded" />
-          <select name="fiscal_half" onChange={onChange} className="border p-2 rounded"><option value="">ปีงบประมาณ</option><option value="first_half">ต.ค.–มี.ค.</option><option value="second_half">เม.ย.–ก.ย.</option></select>
+          <select name="fiscal_half" onChange={onChange} className="border p-2 rounded"><option value="">ทุกรอบการประเมิน</option><option value="first_half">ต.ค.–มี.ค.</option><option value="second_half">เม.ย.–ก.ย.</option></select>
           <select name="type" onChange={onChange} className="border p-2 rounded">
             <option value="">ทุกประเภท</option>
             <option value="TOR">TOR</option>
