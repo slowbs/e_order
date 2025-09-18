@@ -38,7 +38,14 @@ if (file_exists($envPath)) {
 // The Vite dev server (test version) runs on port 5173. This is the most reliable
 // way to detect the environment, as it's not affected by server URL rewrites.
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-$is_test_version = ($origin === 'http://localhost:5173');
+
+// A request is considered from a "test" environment if it originates from
+// the local Vite dev server OR from any ngrok tunnel. Checking the origin is
+// the most reliable method.
+$is_vite_dev_server = ($origin === 'http://localhost:5173');
+$is_ngrok_origin = (strpos($origin, 'ngrok-free.app') !== false || strpos($origin, 'ngrok.io') !== false);
+
+$is_test_version = $is_vite_dev_server || $is_ngrok_origin;
 
 // Read general DB config from environment variables with sensible defaults.
 $DB_HOST = getenv('DB_HOST') ?: '127.0.0.1';

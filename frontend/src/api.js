@@ -2,7 +2,18 @@ import axios from 'axios'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost/e_order/backend/api';
 
-export const api = axios.create({ baseURL: API_BASE, timeout: 10000 });
+// Conditionally add the ngrok skip header only if the URL is an ngrok tunnel.
+// This is a cleaner approach than sending it for all requests.
+const headers = {};
+if (API_BASE.includes('ngrok-free.app') || API_BASE.includes('ngrok.io')) {
+  headers['ngrok-skip-browser-warning'] = 'true';
+}
+
+export const api = axios.create({
+  baseURL: API_BASE,
+  timeout: 10000,
+  headers: headers
+});
 
 export async function fetchCommands(filters={}){
   const res = await api.get('commands', { params: filters });

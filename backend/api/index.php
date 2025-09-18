@@ -1,9 +1,14 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
+// --- PRODUCTION API ENDPOINT (Connects to 'e_order' DB) ---
+// This file is the main entry point for the PRODUCTION environment.
+// - It is called by the built version of the frontend.
+// - It relies on .htaccess to handle clean URLs (e.g., /api/commands).
+// - The `db.php` file automatically connects to the 'e_order' (production) database.
+
 // Allow CORS for local dev
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, ngrok-skip-browser-warning');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
 require_once __DIR__ . '/db.php';
@@ -20,9 +25,12 @@ $path = trim($path, '/');
 
 $segments = $path === '' ? [] : explode('/', $path);
 
-// Routing
+// --- Main API Router ---
+// This block checks the first segment of the path to determine which resource
+// is being requested (e.g., 'commands', 'uploads', 'summary').
 if (!empty($segments) && $segments[0] === 'commands') {
-    // /commands or /commands/:id
+    // --- [C]RUD: CREATE a new command ---
+    // Handles POST /commands
     if ($method === 'POST' && count($segments) === 1) {
         // Support multipart/form-data for file uploads
         $data = $_POST;
@@ -69,6 +77,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
         }
     }
 
+    // --- C[R]UD: READ a list of commands ---
+    // Handles GET /commands with filtering, pagination, and search
     if ($method === 'GET' && count($segments) === 1) {
         // Filters: type, status, fiscal_year, fiscal_half, page, limit
         $params = $_GET;
@@ -120,6 +130,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
         exit;
     }
 
+    // --- C[R]UD: READ a single command by ID ---
+    // Handles GET /commands/:id
     if ($method === 'GET' && count($segments) === 2) {
         $id = intval($segments[1]);
         $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
@@ -130,6 +142,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
         exit;
     }
 
+    // --- CR[U]D: UPDATE an existing command ---
+    // Handles PUT /commands/:id (for JSON data) and POST /commands/:id (for multipart/form-data file updates)
     if (($method === 'PUT' || $method === 'POST') && count($segments) === 2) {
         // Accept both PUT and POST for updates (POST with _method=PUT possible)
         $id = intval($segments[1]);
@@ -202,6 +216,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
         }
     }
 
+    // --- CRU[D]: DELETE a command ---
+    // Handles DELETE /commands/:id
     if ($method === 'DELETE' && count($segments) === 2) {
         $id = intval($segments[1]);
 
@@ -237,8 +253,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
     }
 }
 
-// Serve uploaded files directly when path starts with uploads/
-// e.g. GET /uploads/<filename>
+// --- File Serving Route ---
+// Handles GET /uploads/<filename> to serve uploaded files.
 if (!empty($segments) && $segments[0] === 'uploads' && isset($segments[1]) && $method === 'GET') {
     $filename = basename($segments[1]);
     $full = __DIR__ . '/../uploads/' . $filename;
@@ -253,6 +269,8 @@ if (!empty($segments) && $segments[0] === 'uploads' && isset($segments[1]) && $m
     exit;
 }
 
+// --- Summary Route ---
+// Handles GET /summary to provide a statistical summary of commands.
 if (!empty($segments) && $segments[0] === 'summary') {
     // Summarize number of commands by type and status for fiscal_year (optional param)
     $fy = $_GET['fiscal_year'] ?? null;
@@ -275,5 +293,6 @@ if (!empty($segments) && $segments[0] === 'summary') {
     exit;
 }
 
+// If no route was matched, return a 404 Not Found error.
 http_response_code(404);
 echo json_encode(['error'=>'Not Found']);
