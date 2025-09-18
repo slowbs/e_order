@@ -26,6 +26,11 @@ export async function updateCommand(id, payload){
   }
 }
 
+export async function deleteCommand(id){
+  const res = await api.delete(`commands/${id}`);
+  return res.data;
+}
+
 export async function fetchSummary(fiscal_year){
   const res = await api.get('summary', { params: { fiscal_year } });
   return res.data;

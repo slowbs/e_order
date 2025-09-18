@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 // Allow CORS for local dev
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 
@@ -198,6 +198,40 @@ if (!empty($segments) && $segments[0] === 'commands') {
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Server error during command update', 'message' => $e->getMessage()]);
+            exit;
+        }
+    }
+
+    if ($method === 'DELETE' && count($segments) === 2) {
+        $id = intval($segments[1]);
+
+        try {
+            // First, get the file_path to delete the associated file
+            $stmt = $pdo->prepare('SELECT file_path FROM commands WHERE id = ?');
+            $stmt->execute([$id]);
+            $file_path = $stmt->fetchColumn();
+
+            if ($file_path) {
+                $full_path = __DIR__ . '/../' . $file_path;
+                if (file_exists($full_path)) {
+                    @unlink($full_path);
+                }
+            }
+
+            // Then, delete the record from the database
+            $stmt = $pdo->prepare('DELETE FROM commands WHERE id = ?');
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() > 0) {
+                echo json_encode(['message' => 'Command deleted successfully']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['error' => 'Command not found']);
+            }
+            exit;
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error during command deletion', 'message' => $e->getMessage()]);
             exit;
         }
     }

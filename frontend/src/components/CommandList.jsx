@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { fetchCommands } from '../api'
+import { fetchCommands, deleteCommand } from '../api'
 import { api } from '../api'
 import CommandForm from './CommandForm'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 import Modal from './Modal'
+import toast from 'react-hot-toast'
 
 export default function CommandList(){
   const [filters, setFilters] = useState({});
@@ -37,6 +38,24 @@ export default function CommandList(){
   function openEditModal(record) {
     setEditing(record);
     setIsModalOpen(true);
+  }
+
+  async function handleDelete(id, title) {
+    if (window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบรายการ:\n"${title}"\n\nการกระทำนี้ไม่สามารถย้อนกลับได้`)) {
+        try {
+            await deleteCommand(id);
+            toast.success('ลบรายการสำเร็จ');
+            // If the deleted item was the last one on the page, and it's not page 1, go to the previous page.
+            if (rows.length === 1 && page > 1) {
+                setPage(p => p - 1);
+            } else {
+                load();
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('เกิดข้อผิดพลาดในการลบ');
+        }
+    }
   }
 
   const totalPages = Math.ceil(total / limit);
@@ -108,6 +127,7 @@ export default function CommandList(){
                           <a className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-blue-600" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
                         )}
                         <button onClick={() => openEditModal(r)} className="inline-block px-3 py-1 bg-orange-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-orange-600">แก้ไข</button>
+                        <button onClick={() => handleDelete(r.id, r.title)} className="inline-block px-3 py-1 bg-red-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-red-600">ลบ</button>
                       </div>
                     </td>
                   </tr>
