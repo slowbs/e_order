@@ -3,6 +3,7 @@ import { fetchCommands } from '../api'
 import { api } from '../api'
 import CommandForm from './CommandForm'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
+import Modal from './Modal'
 
 export default function CommandList(){
   const [filters, setFilters] = useState({});
@@ -12,6 +13,7 @@ export default function CommandList(){
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [editing, setEditing] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(()=>{ load(); }, [page]);
   async function load(){ 
@@ -30,6 +32,11 @@ export default function CommandList(){
   function handleSearch() {
     if (page !== 1) setPage(1);
     else load();
+  }
+
+  function openEditModal(record) {
+    setEditing(record);
+    setIsModalOpen(true);
   }
 
   const totalPages = Math.ceil(total / limit);
@@ -84,7 +91,7 @@ export default function CommandList(){
                       {r.file_path && (
                         <a className="px-3 py-1 bg-green-50 text-green-700 rounded text-xs" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
                       )}
-                      <button onClick={()=>setEditing(r)} className="px-3 py-1 bg-yellow-50 text-yellow-800 rounded text-xs">แก้ไข</button>
+                      <button onClick={() => openEditModal(r)} className="px-3 py-1 bg-yellow-50 text-yellow-800 rounded text-xs">แก้ไข</button>
                     </td>
                   </tr>
               ))}
@@ -102,12 +109,13 @@ export default function CommandList(){
         </div>
       </div>
 
-      {editing && (
-        <div className="mt-4">
-          <h3 className="mb-2 font-semibold">แก้ไขคำสั่ง {editing.command_number}</h3>
-          <CommandForm key={editing.id} id={editing.id} initial={editing} onSaved={()=>{ setEditing(null); load(); }} onCancel={()=>setEditing(null)} />
-        </div>
-      )}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} afterLeave={() => setEditing(null)} title={editing ? `แก้ไข: ${editing.title}` : ''}>
+        {editing && (
+          <div className="p-6">
+            <CommandForm key={editing.id} id={editing.id} initial={editing} onSaved={()=>{ setIsModalOpen(false); load(); }} onCancel={()=>setIsModalOpen(false)} />
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

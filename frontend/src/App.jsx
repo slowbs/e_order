@@ -3,9 +3,11 @@ import Dashboard from './components/Dashboard'
 import CommandForm from './components/CommandForm'
 import CommandList from './components/CommandList'
 import EvaluationList from './components/EvaluationList'
+import Modal from './components/Modal'
 
 export default function App(){
   const [view, setView] = React.useState('dashboard');
+  const [isNewCommandModalOpen, setIsNewCommandModalOpen] = React.useState(false);
   return (
     <div className="min-h-screen bg-slate-100">
       <header className="bg-slate-800 text-white shadow-md">
@@ -15,20 +17,21 @@ export default function App(){
             <h1 className="text-lg md:text-2xl font-semibold text-slate-100">ระบบจัดเก็บคำสั่ง</h1>
           </div>
           <nav className="space-x-2">
-            <button onClick={()=>setView('dashboard')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>หน้าหลัก</button>
-            <button onClick={()=>setView('new')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='new' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>เพิ่มคำสั่ง</button>
-            <button onClick={()=>setView('list')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='list' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>ประวัติ</button>
-            <button onClick={()=>setView('evaluation')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='evaluation' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>ประเมิน</button>
+            <button onClick={()=>setView('dashboard')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>หน้าหลัก</button><button onClick={()=>setIsNewCommandModalOpen(true)} className={`px-4 py-2 rounded-md font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700`}>+ เพิ่มคำสั่ง</button>
+            <button onClick={()=>setView('list')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='list' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>ประวัติ</button><button onClick={()=>setView('evaluation')} className={`px-4 py-2 rounded-md font-medium transition-colors ${view==='evaluation' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>ประเมิน</button>
           </nav>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {view === 'dashboard' && <Dashboard />}
-        {view === 'new' && <CommandForm onSaved={()=>setView('dashboard')} />}
         {view === 'list' && <CommandList />}
         {view === 'evaluation' && <EvaluationList />}
       </main>
+
+      <Modal isOpen={isNewCommandModalOpen} onClose={() => setIsNewCommandModalOpen(false)} title="เพิ่มคำสั่งใหม่">
+        <CommandForm onSaved={() => setIsNewCommandModalOpen(false)} onCancel={() => setIsNewCommandModalOpen(false)} />
+      </Modal>
     </div>
   )
 }
