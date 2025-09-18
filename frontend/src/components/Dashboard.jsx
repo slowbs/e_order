@@ -99,23 +99,23 @@ export default function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse table-fixed">
             <thead>
-              <tr className="text-left text-xs text-slate-500 bg-slate-50">
-                <th className="p-3 font-medium w-[10%]">หมายเลข</th>
-                <th className="p-3 font-medium w-[50%]">ชื้อเรื่อง</th>
-                <th className="p-3 font-medium w-[10%]">ประเภท</th>
-                <th className="p-3 font-medium w-[10%]">สถานะ</th>
-                <th className="p-3 font-medium w-[10%]">วันที่</th>
-                <th className="p-3 font-medium w-[5%]">File</th></tr>
+              <tr className="text-xs text-slate-500 bg-slate-50 border-b border-t">
+                <th className="p-3 font-medium w-[12%] text-center border-r border-l">หมายเลข</th>
+                <th className="p-3 font-medium w-[50%] text-center border-r">ชื้อเรื่อง</th>
+                <th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th>
+                <th className="p-3 font-medium w-[10%] text-center border-r">สถานะ</th>
+                <th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th>
+                <th className="p-3 font-medium w-[8%] text-center border-r">File</th></tr>
             </thead>
             <tbody>
               {latest && latest.map(r => (
-                <tr key={r.id} className="border-t">
-                  <td className="p-2">{r.command_number}</td>
-                  <td className="p-2">{r.title}</td>
-                  <td className="p-2">{typeToThai(r.type)}</td>
-                  <td className="p-2">{statusToThai(r.status)}</td>
-                  <td className="p-2">{formatThaiDate(r.date_received)}</td>
-                  <td className="p-2">{r.file_path ? <a className="text-blue-600" href={`${base}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
+                <tr key={r.id} className="border-t border-b">
+                  <td className="p-2 text-center border-r border-l">{r.command_number}</td>
+                  <td className="p-2 border-r">{r.title}</td>
+                  <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
+                  <td className="p-2 text-center border-r">{statusToThai(r.status)}</td>
+                  <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
+                  <td className="p-2 text-center border-r">{r.file_path ? <a className="text-blue-600" href={`${base}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
                 </tr>
               ))}
             </tbody>

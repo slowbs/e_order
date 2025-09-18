@@ -60,28 +60,28 @@ export default function EvaluationList(){
       {/* Table section - new layout */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             <thead>
-              <tr className="text-left text-xs text-slate-500 bg-slate-50">
-                <th className="p-3 font-medium w-16">ลำดับ</th>
-                <th className="p-3 font-medium">รายการ</th>
-                <th className="p-3 font-medium w-32">ประเภท</th>
-                <th className="p-3 font-medium w-32">วันที่</th>
-                <th className="p-3 font-medium w-40 text-right">งบประมาณ</th>
-                <th className="p-3 font-medium w-40">สถานะ</th>
+              <tr className="text-xs text-slate-500 bg-slate-50 border-b">
+                <th className="p-3 font-medium w-[5%] text-center border-r">ลำดับ</th>
+                <th className="p-3 font-medium w-[50%] text-left border-r">รายการ</th>
+                <th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th>
+                <th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th>
+                <th className="p-3 font-medium w-[15%] text-right border-r">งบประมาณ</th>
+                <th className="p-3 font-medium w-[10%] text-center">สถานะ</th>
               </tr>
             </thead>
             <tbody>
               {rows && rows.map((r, index) => (
                 <tr key={r.id} className="border-t">
-                    <td className="p-2 text-center">{(page - 1) * limit + index + 1}</td>
-                    <td className="p-2">
+                    <td className="p-2 text-center border-r">{(page - 1) * limit + index + 1}</td>
+                    <td className="p-2 text-left border-r truncate">
                       {r.details ? `${r.details} ` : ''}ตาม {r.document_type} เลขที่ {r.command_number}
                     </td>
-                    <td className="p-2">{typeToThai(r.type)}</td>
-                    <td className="p-2">{formatThaiDate(r.date_received)}</td>
-                    <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
+                    <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
+                    <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
+                    <td className="p-2 text-right border-r">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                    <td className="p-2 text-center"><span className={`px-2 py-1 rounded text-xs ${
                       r.status === 'Completed' ? 'bg-green-100 text-green-700' :
                       r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
                       r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :

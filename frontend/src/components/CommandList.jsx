@@ -68,26 +68,26 @@ export default function CommandList(){
 
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm table-fixed">
             <thead>
-              <tr className="text-left text-xs text-slate-500 bg-slate-50"><th className="p-3 font-medium">หมายเลข</th><th className="p-3 font-medium">ชื่อเรื่อง</th><th className="p-3 font-medium">ประเภท</th><th className="p-3 font-medium text-right">งบประมาณ</th><th className="p-3 font-medium">สถานะ</th><th className="p-3 font-medium">วันที่</th><th className="p-3 font-medium">หน่วยงาน</th><th className="p-3 font-medium"></th></tr>
+              <tr className="text-xs text-slate-500 bg-slate-50 border-b"><th className="p-3 font-medium w-[10%] text-center border-r">หมายเลข</th><th className="p-3 font-medium w-[25%] text-left border-r">ชื่อเรื่อง</th><th className="p-3 font-medium w-[10%] text-center border-r">ประเภท</th><th className="p-3 font-medium w-[15%] text-right border-r">งบประมาณ</th><th className="p-3 font-medium w-[10%] text-center border-r">สถานะ</th><th className="p-3 font-medium w-[10%] text-center border-r">วันที่</th><th className="p-3 font-medium w-[10%] text-left border-r">หน่วยงาน</th><th className="p-3 font-medium w-[10%] text-center"></th></tr>
             </thead>
             <tbody>
               {rows && rows.map(r=> (
                 <tr key={r.id} className="border-t">
-                    <td className="p-2">{r.command_number}</td>
-                    <td className="p-2">{r.title}</td>
-                    <td className="p-2">{typeToThai(r.type)}</td>
-                    <td className="p-2 text-right">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
-                    <td className="p-2"><span className={`px-2 py-1 rounded text-xs ${
+                    <td className="p-2 text-center border-r">{r.command_number}</td>
+                    <td className="p-2 text-left border-r truncate">{r.title}</td>
+                    <td className="p-2 text-center border-r">{typeToThai(r.type)}</td>
+                    <td className="p-2 text-right border-r">{r.budget ? parseFloat(r.budget).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-'}</td>
+                    <td className="p-2 text-center border-r"><span className={`px-2 py-1 rounded text-xs ${
                       r.status === 'Completed' ? 'bg-green-100 text-green-700' :
                       r.status === 'In Progress' ? 'bg-yellow-100 text-yellow-700' :
                       r.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>{statusToThai(r.status)}</span></td>
-                    <td className="p-2">{formatThaiDate(r.date_received)}</td>
-                    <td className="p-2">{r.agency}</td>
-                    <td className="p-2 text-right space-x-2">
+                    <td className="p-2 text-center border-r">{formatThaiDate(r.date_received)}</td>
+                    <td className="p-2 text-left border-r">{r.agency}</td>
+                    <td className="p-2 text-center space-x-2">
                       {r.file_path && (
                         <a className="px-3 py-1 bg-green-50 text-green-700 rounded text-xs" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
                       )}
