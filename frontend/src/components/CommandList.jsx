@@ -111,7 +111,7 @@ export default function CommandList(){
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} afterLeave={() => setEditing(null)} title={editing ? `แก้ไข: ${editing.title}` : ''}>
         {editing && (
-          <div className="p-6">
+          <div className="bg-white">
             <CommandForm key={editing.id} id={editing.id} initial={editing} onSaved={()=>{ setIsModalOpen(false); load(); }} onCancel={()=>setIsModalOpen(false)} />
           </div>
         )}

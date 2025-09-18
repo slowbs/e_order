@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { fetchSummary, fetchCommands } from '../api'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 
-export default function Dashboard(){
+export default function Dashboard() {
   const [summary, setSummary] = useState({});
   const [latest, setLatest] = useState([]);
   const [page, setPage] = useState(1);
@@ -10,14 +10,14 @@ export default function Dashboard(){
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(()=>{ loadSummary(); }, []);
-  useEffect(()=>{ loadLatest(); }, [page]); // Reload when page changes
+  useEffect(() => { loadSummary(); }, []);
+  useEffect(() => { loadLatest(); }, [page]); // Reload when page changes
 
-  async function loadSummary(){
+  async function loadSummary() {
     const s = await fetchSummary();
     setSummary(s);
   }
-  async function loadLatest(){
+  async function loadLatest() {
     const res = await fetchCommands({ page, limit, q: searchTerm });
     if (res && Array.isArray(res.data)) {
       setLatest(res.data);
@@ -34,7 +34,7 @@ export default function Dashboard(){
     }
   }
 
-  const base = (import.meta.env.VITE_API_BASE||'http://localhost/e_order/backend/api').replace(/\/api\/?$/,'');
+  const base = (import.meta.env.VITE_API_BASE || 'http://localhost/e_order/backend/api').replace(/\/api\/?$/, '');
 
   const types = [
     { key: 'TOR', label: 'TOR' },
@@ -65,7 +65,7 @@ export default function Dashboard(){
   return (
     <div>
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {types.map(t=> (
+        {types.map(t => (
           <div key={t.key} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
             <div className="flex justify-between items-start">
               <h3 className="font-semibold text-slate-700">{t.label}</h3>
@@ -89,8 +89,8 @@ export default function Dashboard(){
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
           <h3 className="font-semibold text-lg text-slate-800">คำสั่งล่าสุด</h3>
           <div className="flex items-center gap-2 mt-2 md:mt-0">
-            <input 
-              type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} 
+            <input
+              type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
               placeholder="ค้นหาเลขที่/ชื่อเรื่อง..." className="border p-2 rounded w-full md:w-auto" />
             <button onClick={handleSearch} className="px-3 py-2 bg-blue-600 text-white rounded">ค้นหา</button>
@@ -99,10 +99,16 @@ export default function Dashboard(){
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="text-left text-xs text-slate-500 bg-slate-50"><th className="p-3 font-medium">หมายเลข</th><th className="p-3 font-medium">ชื้อเรื่อง</th><th className="p-3 font-medium">ประเภท</th><th className="p-3 font-medium">สถานะ</th><th className="p-3 font-medium">วันที่</th><th className="p-3 font-medium">File</th></tr>
+              <tr className="text-left text-xs text-slate-500 bg-slate-50">
+                <th className="p-3 font-medium">หมายเลข</th>
+                <th className="p-3 font-medium">ชื้อเรื่อง</th>
+                <th className="p-3 font-medium">ประเภท</th>
+                <th className="p-3 font-medium">สถานะ</th>
+                <th className="p-3 font-medium">วันที่</th>
+                <th className="p-3 font-medium">File</th></tr>
             </thead>
             <tbody>
-              {latest && latest.map(r=> (
+              {latest && latest.map(r => (
                 <tr key={r.id} className="border-t">
                   <td className="p-2">{r.command_number}</td>
                   <td className="p-2">{r.title}</td>
