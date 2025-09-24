@@ -135,7 +135,7 @@ export default function CommandList(){
                     <td className="p-2">
                       <div className="flex flex-wrap justify-center items-center gap-1">
                         {r.file_path && (
-                          <a className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-blue-600" href={`${api.defaults.baseURL.replace(/\/api\/?$/,'')}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
+                          <a className="inline-block px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-blue-600" href={`${import.meta.env.VITE_BACKEND_ROOT_URL}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a>
                         )}
                         <button onClick={() => openEditModal(r)} className="inline-block px-3 py-1 bg-orange-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-orange-600">แก้ไข</button>
                         <button onClick={() => handleDelete(r.id, r.title)} className="inline-block px-3 py-1 bg-red-500 text-white rounded-full text-xs font-medium transition-colors hover:bg-red-600">ลบ</button>
