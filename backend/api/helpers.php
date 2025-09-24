@@ -99,3 +99,15 @@ function validate_jwt(): ?object {
     echo json_encode(['error' => 'Unauthorized', 'message' => 'Authorization token not found']);
     exit;
 }
+
+/**
+ * Sends a JSON response with appropriate headers and encoding.
+ * @param mixed $data The data to encode.
+ * @param int $status_code The HTTP status code to send.
+ */
+function json_response($data, int $status_code = 200) {
+    http_response_code($status_code);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+}

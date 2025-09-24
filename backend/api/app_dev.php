@@ -11,9 +11,7 @@ if (!empty($segments) && $segments[0] === 'login' && $method === 'POST') {
     $password = $data['password'] ?? null;
 
     if (!$username || !$password) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Username and password are required']);
-        exit;
+        json_response(['error' => 'Username and password are required'], 400);
     }
 
     $stmt = $pdo->prepare('SELECT id, username, password, name, role FROM users WHERE username = ?');
@@ -24,22 +22,20 @@ if (!empty($segments) && $segments[0] === 'login' && $method === 'POST') {
         // Password is correct, generate JWT
         $token = create_jwt($user);
         unset($user['password']); // Do not send password hash to client
-        echo json_encode(['token' => $token, 'user' => $user]);
+        json_response(['token' => $token, 'user' => $user]);
     } else {
-        http_response_code(401);
-        echo json_encode(['error' => 'Invalid credentials']);
+        json_response(['error' => 'Invalid credentials'], 401);
     }
-    exit;
 }
 
-// --- Main API Router ---
-// This block checks the first segment of the path to determine which resource
-// is being requested (e.g., 'commands', 'uploads', 'summary').
-if (!empty($segments) && $segments[0] === 'commands') {
-    // --- PROTECT THIS ROUTE ---
-    // All requests to /commands/* must be authenticated.
-    $current_user = validate_jwt();
+// --- Authentication Wall ---
+// Any route defined below this line requires a valid JWT.
+$current_user = validate_jwt();
 
+// --- Protected Routes ---
+
+// Handles /commands/*
+if (!empty($segments) && $segments[0] === 'commands') {
     // --- [C]RUD: CREATE a new command ---
     // Handles POST /commands
     if ($method === 'POST' && count($segments) === 1) {
@@ -59,9 +55,7 @@ if (!empty($segments) && $segments[0] === 'commands') {
         $status = $data['status'] ?? 'In Progress';
 
         if (!$command_number || !$title || !$date_received || !$type) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Missing required fields']);
-            exit;
+            json_response(['error' => 'Missing required fields'], 400);
         }
 
         list($fiscal_year, $fiscal_half) = compute_fiscal_from_date($date_received);
@@ -74,17 +68,11 @@ if (!empty($segments) && $segments[0] === 'commands') {
             $id = $pdo->lastInsertId();
             $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
             $stmt->execute([$id]);
-            $row = $stmt->fetch();
-            echo json_encode($row);
-            exit;
+            json_response($stmt->fetch());
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error during command creation', 'message' => $e->getMessage()]);
-            exit;
+            json_response(['error' => 'Database error during command creation', 'message' => $e->getMessage()], 500);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Server error during command creation', 'message' => $e->getMessage()]);
-            exit;
+            json_response(['error' => 'Server error during command creation', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -137,8 +125,7 @@ if (!empty($segments) && $segments[0] === 'commands') {
         $rows = $stmt->fetchAll();
 
         // Return structured response
-        echo json_encode(['data' => $rows, 'total' => (int)$total_rows, 'page' => $page, 'limit' => $limit]);
-        exit;
+        json_response(['data' => $rows, 'total' => (int)$total_rows, 'page' => $page, 'limit' => $limit]);
     }
 
     // --- C[R]UD: READ a single command by ID ---
@@ -148,9 +135,8 @@ if (!empty($segments) && $segments[0] === 'commands') {
         $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
         $stmt->execute([$id]);
         $row = $stmt->fetch();
-        if (!$row) { http_response_code(404); echo json_encode(['error'=>'Not found']); exit; }
-        echo json_encode($row);
-        exit;
+        if (!$row) { json_response(['error'=>'Not found'], 404); }
+        json_response($row);
     }
 
     // --- CR[U]D: UPDATE an existing command ---
@@ -206,24 +192,18 @@ if (!empty($segments) && $segments[0] === 'commands') {
         }
 
         try {
-            if (!$sets) { http_response_code(400); echo json_encode(['error'=>'No fields to update']); exit; }
+            if (!$sets) { json_response(['error'=>'No fields to update'], 400); }
             $values[] = $id;
             $sql = 'UPDATE commands SET ' . implode(', ', $sets) . ' WHERE id = ?';
             $stmt = $pdo->prepare($sql);
             $stmt->execute($values);
             $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
             $stmt->execute([$id]);
-            $row = $stmt->fetch();
-            echo json_encode($row);
-            exit;
+            json_response($stmt->fetch());
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error during command update', 'message' => $e->getMessage()]);
-            exit;
+            json_response(['error' => 'Database error during command update', 'message' => $e->getMessage()], 500);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Server error during command update', 'message' => $e->getMessage()]);
-            exit;
+            json_response(['error' => 'Server error during command update', 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -250,16 +230,12 @@ if (!empty($segments) && $segments[0] === 'commands') {
             $stmt->execute([$id]);
 
             if ($stmt->rowCount() > 0) {
-                echo json_encode(['message' => 'Command deleted successfully']);
+                json_response(['message' => 'Command deleted successfully']);
             } else {
-                http_response_code(404);
-                echo json_encode(['error' => 'Command not found']);
+                json_response(['error' => 'Command not found'], 404);
             }
-            exit;
         } catch (PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error during command deletion', 'message' => $e->getMessage()]);
-            exit;
+            json_response(['error' => 'Database error during command deletion', 'message' => $e->getMessage()], 500);
         }
     }
 }
@@ -269,7 +245,7 @@ if (!empty($segments) && $segments[0] === 'commands') {
 if (!empty($segments) && $segments[0] === 'uploads' && isset($segments[1]) && $method === 'GET') {
     $filename = basename($segments[1]);
     $full = __DIR__ . '/../uploads/' . $filename;
-    if (!file_exists($full)) { http_response_code(404); echo json_encode(['error'=>'File not found']); exit; }
+    if (!file_exists($full)) { json_response(['error'=>'File not found'], 404); }
     // Determine mime type
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime = finfo_file($finfo, $full);
@@ -284,6 +260,8 @@ if (!empty($segments) && $segments[0] === 'uploads' && isset($segments[1]) && $m
 // Handles GET /summary to provide a statistical summary of commands.
 if (!empty($segments) && $segments[0] === 'summary') {
     // Summarize number of commands by type and status for fiscal_year (optional param)
+    // This route is now protected by the authentication wall above.
+
     $fy = $_GET['fiscal_year'] ?? null;
     $where = '';
     $values = [];
@@ -300,12 +278,10 @@ if (!empty($segments) && $segments[0] === 'summary') {
         if (!isset($out[$t])) $out[$t] = ['In Progress'=>0,'Completed'=>0];
         $out[$t][$s] = $c;
     }
-    echo json_encode($out);
-    exit;
+    json_response($out);
 }
 
 // If no route was matched, return a 404 Not Found error.
-http_response_code(404);
-echo json_encode(['error'=>'Not Found']);
+json_response(['error'=>'Not Found'], 404);
 
 ?>
