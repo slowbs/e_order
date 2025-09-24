@@ -1,4 +1,7 @@
 <?php
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
 function parse_json_request() {
     $data = json_decode(file_get_contents('php://input'), true);
     return $data ?: [];
@@ -42,4 +45,57 @@ function handle_file_upload($field_name = 'file') {
         return 'uploads/' . $filename;
     }
     return null;
+}
+
+/**
+ * Creates a JSON Web Token (JWT).
+ * @param array $user_data The user data to encode in the token.
+ * @return string The generated JWT.
+ */
+function create_jwt(array $user_data): string {
+    $secret_key = getenv('JWT_SECRET') ?: 'YOUR_DEFAULT_SECRET_KEY_CHANGE_ME';
+    $issuer_claim = "YOUR_APP_NAME"; // e.g., "e-order-api"
+    $audience_claim = "YOUR_APP_NAME";
+    $issuedat_claim = time();
+    $expire_claim = $issuedat_claim + (8 * 60 * 60); // 8 hours
+
+    $payload = [
+        'iss' => $issuer_claim,
+        'aud' => $audience_claim,
+        'iat' => $issuedat_claim,
+        'exp' => $expire_claim,
+        'data' => [
+            'id' => $user_data['id'],
+            'username' => $user_data['username'],
+            'role' => $user_data['role'],
+        ]
+    ];
+
+    return JWT::encode($payload, $secret_key, 'HS256');
+}
+
+/**
+ * Validates a JWT from the Authorization header and returns the decoded payload.
+ * @return object|null The decoded payload object on success, or triggers a 401 error on failure.
+ */
+function validate_jwt(): ?object {
+    $secret_key = getenv('JWT_SECRET') ?: 'YOUR_DEFAULT_SECRET_KEY_CHANGE_ME';
+    $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+
+    if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+        $jwt = $matches[1];
+        try {
+            $decoded = JWT::decode($jwt, new Key($secret_key, 'HS256'));
+            return $decoded->data; // Return the user data part of the payload
+        } catch (Exception $e) {
+            // Token is invalid (expired, malformed, etc.)
+            http_response_code(401);
+            echo json_encode(['error' => 'Unauthorized', 'message' => $e->getMessage()]);
+            exit;
+        }
+    }
+
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized', 'message' => 'Authorization token not found']);
+    exit;
 }

@@ -1,6 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # This is the crucial line that forwards the Authorization header to PHP
+    # It copies the value into a variable that PHP can access via $_SERVER['HTTP_AUTHORIZATION']
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
     # This allows PHP to correctly handle paths like /script.php/path/info
     # It's crucial for the development environment (api_dev.php).
     AcceptPathInfo On
@@ -15,5 +19,3 @@
     RewriteRule ^(.*)$ index.php/$1 [L]
 
 </IfModule>
-
-

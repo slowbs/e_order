@@ -2,10 +2,44 @@
 // This file is NOT a direct entry point. It is included by api_dev.php for development.
 // It assumes that $pdo, $method, and $segments variables are already defined.
 
+// --- Public Routes (No Authentication Required) ---
+
+// Handles POST /login
+if (!empty($segments) && $segments[0] === 'login' && $method === 'POST') {
+    $data = parse_json_request();
+    $username = $data['username'] ?? null;
+    $password = $data['password'] ?? null;
+
+    if (!$username || !$password) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Username and password are required']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare('SELECT id, username, password, name, role FROM users WHERE username = ?');
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password'])) {
+        // Password is correct, generate JWT
+        $token = create_jwt($user);
+        unset($user['password']); // Do not send password hash to client
+        echo json_encode(['token' => $token, 'user' => $user]);
+    } else {
+        http_response_code(401);
+        echo json_encode(['error' => 'Invalid credentials']);
+    }
+    exit;
+}
+
 // --- Main API Router ---
 // This block checks the first segment of the path to determine which resource
 // is being requested (e.g., 'commands', 'uploads', 'summary').
 if (!empty($segments) && $segments[0] === 'commands') {
+    // --- PROTECT THIS ROUTE ---
+    // All requests to /commands/* must be authenticated.
+    $current_user = validate_jwt();
+
     // --- [C]RUD: CREATE a new command ---
     // Handles POST /commands
     if ($method === 'POST' && count($segments) === 1) {

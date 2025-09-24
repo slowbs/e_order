@@ -53,7 +53,12 @@ $DB_USER = getenv('DB_USER') ?: 'root';
 $DB_PASS = getenv('DB_PASS') ?: '';
 
 // Select the database name based on the detected version.
-$DB_NAME = $is_test_version ? 'e_order_test' : 'e_order';
+// If running from the command line, respect the DB_NAME from .env directly.
+// Otherwise (if running via web server), use the origin-based detection.
+$DB_NAME = (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg')
+    ? (getenv('DB_NAME') ?: 'e_order') // For CLI, use .env value, default to 'e_order'
+    : ($is_test_version ? 'e_order_test' : 'e_order'); // For web, use origin detection
+
 
 try {
     $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME;charset=utf8mb4", $DB_USER, $DB_PASS, [
