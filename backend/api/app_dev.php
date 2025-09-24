@@ -58,21 +58,46 @@ if (!empty($segments) && $segments[0] === 'commands') {
             json_response(['error' => 'Missing required fields'], 400);
         }
 
-        list($fiscal_year, $fiscal_half) = compute_fiscal_from_date($date_received);
-
-        $file_path = handle_file_upload('file');
-
         try {
-            $stmt = $pdo->prepare('INSERT INTO commands (command_number,title,date_received,`type`,document_type,agency,budget,details,`status`,fiscal_year,fiscal_half,file_path) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
-            $stmt->execute([$command_number,$title,$date_received,$type,$document_type,$agency,$budget,$details,$status,$fiscal_year,$fiscal_half,$file_path]);
+            $pdo->beginTransaction();
+
+            list($fiscal_year, $fiscal_half) = compute_fiscal_from_date($date_received);
+
+            // Step 1: Insert command data with a NULL file_path first.
+            $stmt = $pdo->prepare(
+                'INSERT INTO commands (command_number, title, date_received, `type`, document_type, agency, budget, details, `status`, fiscal_year, fiscal_half, file_path) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)'
+            );
+            $stmt->execute([$command_number, $title, $date_received, $type, $document_type, $agency, $budget, $details, $status, $fiscal_year, $fiscal_half]);
             $id = $pdo->lastInsertId();
+
+            // Step 2: Handle the file upload.
+            $file_path = handle_file_upload('file');
+
+            // Step 3: If upload was successful, update the record with the file path.
+            if ($file_path) {
+                $update_stmt = $pdo->prepare('UPDATE commands SET file_path = ? WHERE id = ?');
+                $update_stmt->execute([$file_path, $id]);
+            }
+
+            // If everything is successful, commit the transaction.
+            $pdo->commit();
+
+            // Fetch the final, complete record to return to the client.
             $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
             $stmt->execute([$id]);
             json_response($stmt->fetch());
-        } catch (PDOException $e) {
-            json_response(['error' => 'Database error during command creation', 'message' => $e->getMessage()], 500);
+
         } catch (Exception $e) {
-            json_response(['error' => 'Server error during command creation', 'message' => $e->getMessage()], 500);
+            // If any error occurs, roll back the transaction.
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            // Also, attempt to delete the orphaned file if it was already moved.
+            if (!empty($file_path) && file_exists(__DIR__ . '/../' . $file_path)) {
+                @unlink(__DIR__ . '/../' . $file_path);
+            }
+            json_response(['error' => 'Database error during command creation', 'message' => $e->getMessage()], 500);
         }
     }
 
