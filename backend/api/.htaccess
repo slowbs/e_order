@@ -1,21 +1,15 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # This is the crucial line that forwards the Authorization header to PHP
-    # It copies the value into a variable that PHP can access via $_SERVER['HTTP_AUTHORIZATION']
     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 
-    # This allows PHP to correctly handle paths like /script.php/path/info
-    # It's crucial for the development environment (api_dev.php).
-    AcceptPathInfo On
-
-    # Redirect requests for the directory to index.php (for production)
-    RewriteRule ^$ index.php [L]
+    # Do not apply the rewrite rule to the /dev/ directory or its contents
+    RewriteCond %{REQUEST_URI} !^/e_order/backend/api/dev/
 
     # If the request is not for an existing file or directory,
     # route it through index.php (for production pretty URLs).
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php/$1 [L]
+    RewriteRule ^(.*)$ prod/index.php/$1 [L]
 
 </IfModule>
