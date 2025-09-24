@@ -46,3 +46,9 @@ export async function fetchSummary(fiscal_year){
   const res = await api.get('summary', { params: { fiscal_year } });
   return res.data;
 }
+
+export async function loginUser(credentials) {
+  // The baseURL is already set to '.../api_dev.php' or '.../prod/'
+  const res = await api.post('login', credentials);
+  return res; // Return the full response to get both data and status
+}
