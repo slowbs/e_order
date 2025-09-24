@@ -8,6 +8,13 @@ function parse_json_request() {
 }
 
 function compute_fiscal_from_date($date_str) {
+    // Example of using the environment switch for development/testing new logic
+    if (defined('IS_DEV_ENVIRONMENT') && IS_DEV_ENVIRONMENT) {
+        // --- EXPERIMENTAL LOGIC FOR DEV ONLY ---
+        // You can test new logic here safely. Production will not run this block.
+        // For example: error_log("DEV MODE: Computing fiscal date for $date_str");
+    }
+
     // Fiscal year runs Oct 1 - Sep 30.
     // We will return fiscal_year as last two digits of the Buddhist Era (BE) start year,
     // matching examples like 68, 69. For example: if date is 2024-11-01 (AD), BE = 2567,
@@ -24,7 +31,8 @@ function compute_fiscal_from_date($date_str) {
     $fiscal_year = substr((string)$end_of_fiscal, -2);
 
     // first_half: Oct - Mar, second_half: Apr - Sep
-    $fiscal_half = ($month >= 10 || $month <= 3) ? 'first_half' : 'second_half';
+    // The new logic is now stable and promoted to production.
+    $fiscal_half = ($month >= 10 || $month <= 2) ? 'first_half' : 'second_half';
 
     return [$fiscal_year, $fiscal_half];
 }
