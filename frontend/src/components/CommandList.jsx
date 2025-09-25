@@ -17,37 +17,31 @@ export default function CommandList(){
 
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
-
-  // Effect to initialize filters from URL search params on first load
-  useEffect(() => {
-    const typeFromUrl = searchParams.get('type') || '';
-    const statusFromUrl = searchParams.get('status') || '';
-    const qFromUrl = searchParams.get('q') || '';
-
-    setFilters(prev => ({
-      ...prev,
-      type: typeFromUrl,
-      status: statusFromUrl,
-    }));
-    setSearchTerm(qFromUrl);
-  }, [searchParams]);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  
   const load = useCallback(async () => {
-      const res = await fetchCommands({ ...filters, page, limit, q: searchTerm });
-      if (res && Array.isArray(res.data)) {
-          setRows(res.data);
-          setTotal(res.total);
-          setLimit(res.limit);
-      } else {
-          setRows([]);
-          setTotal(0);
-      }
-  }, [filters, page, limit, searchTerm]);
+    const currentFilters = {
+      fiscal_year: searchParams.get('fiscal_year') || '',
+      fiscal_half: searchParams.get('fiscal_half') || '',
+      type: searchParams.get('type') || '',
+      status: searchParams.get('status') || '',
+    };
+    const currentSearchTerm = searchParams.get('q') || '';
 
+    // Sync URL params to local state for UI controls
+    setFilters(currentFilters);
+    setSearchTerm(currentSearchTerm);
+
+    // Fetch data using the definitive values from the URL and current page state
+    const res = await fetchCommands({ ...currentFilters, page, limit, q: currentSearchTerm });
+    if (res && Array.isArray(res.data)) { setRows(res.data); setTotal(res.total); setLimit(res.limit); } 
+    else { setRows([]); setTotal(0); }
+  }, [searchParams, page, limit]);
+
+  // Main data loading effect
   useEffect(() => { load(); }, [load]);
 
-  // Listen for global data updates (e.g., after creating a new command)
+  // Listen for global updates
   useEffect(() => {
       const handleUpdate = () => load();
       window.addEventListener('commands-updated', handleUpdate);
@@ -55,11 +49,30 @@ export default function CommandList(){
           window.removeEventListener('commands-updated', handleUpdate);
       };
   }, [load]);
-
   function onChange(e){ const {name,value} = e.target; setFilters(prev=>({...prev,[name]:value})); }
+  
   function handleSearch() {
-    if (page !== 1) setPage(1);
-    else load();
+    // Update URL search params which will trigger a reload
+    setPage(1); // Reset to page 1 for new searches
+    const newParams = new URLSearchParams(searchParams);
+    for (const key in filters) {
+      if (filters[key]) {
+        newParams.set(key, filters[key]);
+      } else {
+        newParams.delete(key);
+      }
+    }
+    if (searchTerm) {
+      newParams.set('q', searchTerm);
+    } else {
+      newParams.delete('q');
+    }
+    // Only update URL if it's different to avoid unnecessary re-renders
+    if (newParams.toString() !== searchParams.toString()) {
+      setSearchParams(newParams);
+    } else if (page !== 1) {
+      // Already on page 1, but something else might need a refresh (less common)
+    }
   }
 
   function openEditModal(record) {
