@@ -61,14 +61,15 @@ if (!empty($segments) && $segments[0] === 'commands') {
         try {
             $pdo->beginTransaction();
 
+            $user_id = $current_user->id; // Get user ID from JWT
             list($fiscal_year, $fiscal_half) = compute_fiscal_from_date($date_received);
 
             // Step 1: Insert command data with a NULL file_path first.
             $stmt = $pdo->prepare(
-                'INSERT INTO commands (command_number, title, date_received, `type`, document_type, agency, budget, details, `status`, fiscal_year, fiscal_half, file_path) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)'
+                'INSERT INTO commands (command_number, title, date_received, `type`, document_type, agency, budget, details, `status`, fiscal_year, fiscal_half, file_path, user_id) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)'
             );
-            $stmt->execute([$command_number, $title, $date_received, $type, $document_type, $agency, $budget, $details, $status, $fiscal_year, $fiscal_half]);
+            $stmt->execute([$command_number, $title, $date_received, $type, $document_type, $agency, $budget, $details, $status, $fiscal_year, $fiscal_half, $user_id]);
             $id = $pdo->lastInsertId();
 
             // Step 2: Handle the file upload.
@@ -126,6 +127,9 @@ if (!empty($segments) && $segments[0] === 'commands') {
         if (!empty($params['fiscal_year'])) { $where[] = 'fiscal_year = ?'; $values[] = $params['fiscal_year']; }
         if (!empty($params['fiscal_half'])) { $where[] = 'fiscal_half = ?'; $values[] = $params['fiscal_half']; }
 
+        // --- Authorization: Filter by user_id for all users ---
+        $where[] = 'user_id = ?'; $values[] = $current_user->id;
+
         $where_clause = $where ? ' WHERE ' . implode(' AND ', $where) : '';
 
         // Get total count for pagination
@@ -157,8 +161,9 @@ if (!empty($segments) && $segments[0] === 'commands') {
     // Handles GET /commands/:id
     if ($method === 'GET' && count($segments) === 2) {
         $id = intval($segments[1]);
-        $stmt = $pdo->prepare('SELECT * FROM commands WHERE id = ?');
-        $stmt->execute([$id]);
+        $sql = 'SELECT * FROM commands WHERE id = ? AND user_id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$id, $current_user->id]);
         $row = $stmt->fetch();
         if (!$row) { json_response(['error'=>'Not found'], 404); }
         json_response($row);
@@ -170,6 +175,18 @@ if (!empty($segments) && $segments[0] === 'commands') {
         // Accept both PUT and POST for updates (POST with _method=PUT possible)
         $id = intval($segments[1]);
         // If request is multipart/form-data (file upload), use $_POST/$_FILES; else parse JSON for PUT
+
+        // --- Authorization: Check ownership before update for all users ---
+        $stmt = $pdo->prepare('SELECT user_id FROM commands WHERE id = ?');
+        $stmt->execute([$id]);
+        $owner_id = $stmt->fetchColumn();
+        if ($owner_id === false) {
+            json_response(['error' => 'Not found'], 404);
+        }
+        if ($owner_id != $current_user->id) {
+            json_response(['error' => 'Forbidden: You do not have permission to update this item.'], 403);
+        }
+
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
         $data = [];
         if (strpos($contentType, 'multipart/form-data') !== false) {
@@ -238,6 +255,16 @@ if (!empty($segments) && $segments[0] === 'commands') {
         $id = intval($segments[1]);
 
         try {
+            // --- Authorization: Check ownership before delete for all users ---
+            $stmt = $pdo->prepare('SELECT user_id FROM commands WHERE id = ?');
+            $stmt->execute([$id]);
+            $owner_id = $stmt->fetchColumn();
+            if ($owner_id === false) {
+                // Item doesn't exist, let the final check handle the 404
+            } else if ($owner_id != $current_user->id) {
+                json_response(['error' => 'Forbidden: You do not have permission to delete this item.'], 403);
+            }
+
             // First, get the file_path to delete the associated file
             $stmt = $pdo->prepare('SELECT file_path FROM commands WHERE id = ?');
             $stmt->execute([$id]);
@@ -291,6 +318,9 @@ if (!empty($segments) && $segments[0] === 'summary') {
     $where = '';
     $values = [];
     if ($fy) { $where = ' WHERE fiscal_year = ?'; $values[] = $fy; }
+
+    // --- Authorization: Filter by user_id for all users ---
+    $where .= ($where ? ' AND ' : ' WHERE ') . 'user_id = ?'; $values[] = $current_user->id;
 
     $sql = "SELECT `type`, `status`, COUNT(*) as cnt FROM commands" . $where . " GROUP BY `type`,`status`";
     $stmt = $pdo->prepare($sql);
