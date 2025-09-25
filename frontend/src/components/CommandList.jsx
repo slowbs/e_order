@@ -47,7 +47,13 @@ export default function CommandList(){
   }
 
   function openEditModal(record) {
-    setEditing(record);
+    // Sanitize the record before passing it to the form.
+    // Convert any null values that might go into inputs to empty strings.
+    const sanitizedRecord = {
+      ...record,
+      budget: record.budget === null ? '' : record.budget,
+    };
+    setEditing(sanitizedRecord);
     setIsModalOpen(true);
   }
 
