@@ -34,24 +34,29 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-sm">
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
+        <div className="flex items-center justify-center min-h-screen bg-slate-100">
+            <div className="p-8 bg-white rounded-xl shadow-lg w-full max-w-md border border-slate-200">
+                <div className="flex flex-col items-center mb-6">
+                    <div className="w-14 h-14 bg-slate-800 rounded-full flex items-center justify-center font-bold text-2xl text-white mb-3">EO</div>
+                    <h1 className="text-2xl font-bold text-slate-800">ระบบจัดเก็บคำสั่ง</h1>
+                    <p className="text-slate-500 mt-1">กรุณาเข้าสู่ระบบเพื่อใช้งาน</p>
+                </div>
+
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-                            Username
+                            ชื่อผู้ใช้งาน
                         </label>
-                        <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required />
                     </div>
                     <div className="mb-6">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                            Password
+                            รหัสผ่าน
                         </label>
-                        <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+                        <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required />
                     </div>
-                    {error && <p className="text-red-500 text-xs italic mb-4">{error}</p>}
-                    <button type="submit" disabled={isLoading} className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline disabled:bg-blue-300">
+                    {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+                    <button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200 disabled:bg-blue-400 disabled:cursor-not-allowed">
                         {isLoading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>

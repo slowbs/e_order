@@ -10,9 +10,9 @@ if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
 
 require_once __DIR__ . '/../api/db.php';
 
-$username = 'slowbs';
-$password = '1596321'; // Change this to your desired password
-$name = 'Admin User';
+$username = 'test';
+$password = '123456'; // Change this to your desired password
+$name = 'Test User';
 $role = 'admin';
 
 echo "Attempting to create user '$username' in database '$DB_NAME'...\n";
