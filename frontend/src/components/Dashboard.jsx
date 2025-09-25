@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { fetchSummary, fetchCommands } from '../api'
+import { Link } from 'react-router-dom'
+import { fetchSummary, fetchCommands, api } from '../api'
 import { formatThaiDate, statusToThai, typeToThai } from '../utils/date'
 
 export default function Dashboard() {
@@ -45,8 +46,6 @@ export default function Dashboard() {
     }
   }
 
-  const base = (import.meta.env.VITE_API_BASE || 'http://localhost/e_order/backend/api').replace(/\/api\/?$/, '');
-
   const types = [
     { key: 'TOR', label: 'TOR' },
     { key: 'Evaluation', label: 'พิจารณาผล' },
@@ -77,20 +76,22 @@ export default function Dashboard() {
     <div>
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {types.map(t => (
-          <div key={t.key} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow duration-300">
-            <div className="flex justify-between items-start">
-              <h3 className="font-semibold text-slate-700">{t.label}</h3>
-              <div className="p-2 bg-slate-100 rounded-lg text-slate-500">{icons[t.key]}</div>
-            </div>
+          <div key={t.key} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow duration-300">
+            <Link to={`/history?type=${t.key}`} className="block group">
+              <div className="flex justify-between items-start">
+                <h3 className="text-lg font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">{t.label}</h3>
+                <div className="p-2 bg-slate-100 rounded-lg text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">{icons[t.key]}</div>
+              </div>
+            </Link>
             <div className="mt-4 grid grid-cols-2 gap-4">
-              <div>
+              <Link to={`/history?type=${t.key}&status=In Progress`} className="block p-2 rounded-lg hover:bg-amber-100 hover:shadow-md transition-all duration-200">
                 <div className="text-3xl font-bold text-amber-500">{summary[t.key]?.['In Progress'] ?? 0}</div>
                 <div className="text-sm text-slate-500">กำลังดำเนินการ</div>
-              </div>
-              <div>
+              </Link>
+              <Link to={`/history?type=${t.key}&status=Completed`} className="block p-2 rounded-lg hover:bg-green-100 hover:shadow-md transition-all duration-200">
                 <div className="text-3xl font-bold text-green-500">{summary[t.key]?.['Completed'] ?? 0}</div>
                 <div className="text-sm text-slate-500">เสร็จสิ้น</div>
-              </div>
+              </Link>
             </div>
           </div>
         ))}
@@ -138,7 +139,7 @@ export default function Dashboard() {
                     </span>
                   </td>
                   <td className="p-2 text-center">{formatThaiDate(r.date_received)}</td>
-                  <td className="p-2 text-center">{r.file_path ? <a className="text-blue-600" href={`${base}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
+                  <td className="p-2 text-center">{r.file_path ? <a className="text-blue-600" href={`${import.meta.env.VITE_BACKEND_ROOT_URL}/${r.file_path}`} target="_blank" rel="noreferrer">ดูไฟล์</a> : '-'}</td>
                 </tr>
               ))}
             </tbody>

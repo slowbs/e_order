@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { fetchCommands, deleteCommand } from '../api'
 import { api } from '../api'
 import CommandForm from './CommandForm'
@@ -7,7 +8,7 @@ import Modal from './Modal'
 import toast from 'react-hot-toast'
 
 export default function CommandList(){
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({ fiscal_year: '', fiscal_half: '', type: '', status: '' });
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -16,6 +17,21 @@ export default function CommandList(){
 
   const [editing, setEditing] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // Effect to initialize filters from URL search params on first load
+  useEffect(() => {
+    const typeFromUrl = searchParams.get('type') || '';
+    const statusFromUrl = searchParams.get('status') || '';
+    const qFromUrl = searchParams.get('q') || '';
+
+    setFilters(prev => ({
+      ...prev,
+      type: typeFromUrl,
+      status: statusFromUrl,
+    }));
+    setSearchTerm(qFromUrl);
+  }, [searchParams]);
 
   const load = useCallback(async () => {
       const res = await fetchCommands({ ...filters, page, limit, q: searchTerm });
@@ -81,15 +97,15 @@ export default function CommandList(){
     <div>
       <div className="bg-white p-4 rounded shadow mb-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-          <input name="fiscal_year" placeholder="ปีงบ (เช่น 68)" onChange={onChange} className="border p-2 rounded" />
-          <select name="fiscal_half" onChange={onChange} className="border p-2 rounded"><option value="">ทุกรอบการประเมิน</option><option value="first_half">ต.ค.–มี.ค.</option><option value="second_half">เม.ย.–ก.ย.</option></select>
-          <select name="type" onChange={onChange} className="border p-2 rounded">
+          <input name="fiscal_year" value={filters.fiscal_year} placeholder="ปีงบ (เช่น 68)" onChange={onChange} className="border p-2 rounded" />
+          <select name="fiscal_half" value={filters.fiscal_half} onChange={onChange} className="border p-2 rounded"><option value="">ทุกรอบการประเมิน</option><option value="first_half">ต.ค.–มี.ค.</option><option value="second_half">เม.ย.–ก.ย.</option></select>
+          <select name="type" value={filters.type} onChange={onChange} className="border p-2 rounded">
             <option value="">ทุกประเภท</option>
             <option value="TOR">TOR</option>
             <option value="Evaluation">พิจารณาผล</option>
             <option value="Inspection">ตรวจรับ</option>
           </select>
-          <select name="status" onChange={onChange} className="border p-2 rounded">
+          <select name="status" value={filters.status} onChange={onChange} className="border p-2 rounded">
             <option value="">ทุกสถานะ</option>
             <option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option><option value="Cancelled">ยกเลิก</option>
           </select>
