@@ -14,11 +14,7 @@ export default function ProtectedRoute() {
         );
     }
 
-    if (!isAuthenticated) {
-        // If not authenticated, redirect to the login page
-        return <Navigate to="/login" replace />;
-    }
-
-    // If authenticated, render the child routes (e.g., the DashboardLayout)
-    return <Outlet />;
+    // If loading is finished, check for authentication.
+    // If authenticated, render the child routes. Otherwise, redirect to login.
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }

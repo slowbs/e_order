@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { api } from '../api'; // Import the global api instance
+import { api, fetchCommands } from '../api'; // Import the global api instance and fetchCommands
 
 // 1. Create the context
 const AuthContext = createContext(null);
@@ -10,25 +10,42 @@ const AuthContext = createContext(null);
  */
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem('token'));
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'));
+    const [token, setToken] = useState(null); // Initialize token state to null
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // Start as not authenticated
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // When the app loads, check if a token exists in localStorage.
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
+        const verifyAuth = async () => {
+            const storedToken = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
 
-        if (storedToken && storedUser) {
-            // If we have a token and user, set them in our state.
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-            setIsAuthenticated(true);
-            // Also, update the api instance to use this token for all future requests.
-            api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        }
-        // We are done with the initial loading.
-        setIsLoading(false);
+            if (storedToken && storedUser) {
+                // Set token for API calls immediately so subsequent requests include it
+                api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+                
+                try {
+                    // Attempt to fetch a protected resource to verify the token's validity
+                    await fetchCommands({ limit: 1 }); // A lightweight call to a protected endpoint
+                    
+                    // If successful, the token is valid
+                    setToken(storedToken);
+                    setUser(JSON.parse(storedUser));
+                    setIsAuthenticated(true);
+                } catch (error) {
+                    // If API call fails (e.g., 401 Unauthorized, token expired), clear invalid data
+                    console.error("Token verification failed:", error);
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    delete api.defaults.headers.common['Authorization'];
+                    setToken(null);
+                    setUser(null);
+                    setIsAuthenticated(false);
+                }
+            }
+            setIsLoading(false); // Finished initial loading check
+        };
+
+        verifyAuth();
     }, []);
 
     const login = (userData, userToken) => {
