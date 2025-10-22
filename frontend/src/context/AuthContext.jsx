@@ -14,6 +14,24 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false); // Start as not authenticated
     const [isLoading, setIsLoading] = useState(true);
 
+    // Centralized logout logic
+    const logout = (reason = 'user') => {
+        if (reason === 'token-expired') {
+            console.log("Session expired. Logging out.");
+        }
+        // 1. Clear token and user from localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // 2. Remove the Authorization header from the api instance
+        delete api.defaults.headers.common['Authorization'];
+
+        // 3. Reset the state
+        setToken(null);
+        setUser(null);
+        setIsAuthenticated(false);
+    };
+
     useEffect(() => {
         const verifyAuth = async () => {
             const storedToken = localStorage.getItem('token');
@@ -33,13 +51,8 @@ export const AuthProvider = ({ children }) => {
                     setIsAuthenticated(true);
                 } catch (error) {
                     // If API call fails (e.g., 401 Unauthorized, token expired), clear invalid data
-                    console.error("Token verification failed:", error);
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    delete api.defaults.headers.common['Authorization'];
-                    setToken(null);
-                    setUser(null);
-                    setIsAuthenticated(false);
+                    console.error("Token verification failed, logging out:", error.response?.status);
+                    logout('token-expired'); // Use the centralized logout function
                 }
             }
             setIsLoading(false); // Finished initial loading check
@@ -60,20 +73,6 @@ export const AuthProvider = ({ children }) => {
         setToken(userToken);
         setUser(userData);
         setIsAuthenticated(true);
-    };
-
-    const logout = () => {
-        // 1. Clear token and user from localStorage
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-
-        // 2. Remove the Authorization header from the api instance
-        delete api.defaults.headers.common['Authorization'];
-
-        // 3. Reset the state
-        setToken(null);
-        setUser(null);
-        setIsAuthenticated(false);
     };
 
     // The value provided to consuming components
