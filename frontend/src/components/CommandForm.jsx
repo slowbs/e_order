@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { createCommand } from '../api'
 import toast from 'react-hot-toast'
 
@@ -6,6 +6,15 @@ const defaultState = { command_number:'', title:'', date_received:'', document_t
 
 export default function CommandForm({ onSaved, initial = null, id = null, onCancel = null }){
   const [form, setForm] = useState(initial ? {...defaultState, ...initial} : defaultState);
+  const [displayBudget, setDisplayBudget] = useState(() => {
+    if (initial?.budget) {
+      const numericValue = parseFloat(initial.budget);
+      if (!isNaN(numericValue)) {
+        return numericValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+      }
+    }
+    return '';
+  });
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const dateInputRef = useRef(null);
@@ -48,6 +57,34 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
     setLoading(false);
   }
 
+  function handleBudgetChange(e) {
+    const value = e.target.value;
+    // 1. Clean the input: remove anything that's not a digit or a dot.
+    let cleanValue = value.replace(/[^0-9.]/g, '');
+
+    // 2. Ensure there's only one decimal point.
+    const firstDotIndex = cleanValue.indexOf('.');
+    if (firstDotIndex !== -1) {
+      const beforeDot = cleanValue.substring(0, firstDotIndex + 1);
+      const afterDot = cleanValue.substring(firstDotIndex + 1).replace(/\./g, ''); // Remove any subsequent dots
+      cleanValue = beforeDot + afterDot;
+    }
+
+    const parts = cleanValue.split('.');
+
+    setForm(prev => ({ ...prev, budget: cleanValue }));
+
+    if (cleanValue === '') setDisplayBudget('');
+    else {
+      // Use toLocaleString on the integer part string directly.
+      const integerPart = parts[0] || '0';
+      const formattedIntegerPart = Number(integerPart).toLocaleString('en-US');
+      const decimalPart = (parts[1] !== undefined ? '.' + parts[1].substring(0, 2) : '');
+      // Handle the case where user just typed a dot (e.g., "1,234.")
+      setDisplayBudget(formattedIntegerPart + decimalPart + (cleanValue.endsWith('.') && !cleanValue.includes('.', cleanValue.length -1) ? '.' : ''));
+    }
+  }
+
   return (
   <form onSubmit={onSubmit}>
     <div className="p-6">
@@ -64,7 +101,7 @@ export default function CommandForm({ onSaved, initial = null, id = null, onCanc
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <label className="block"><div className="text-sm">หน่วยงาน</div><input name="agency" value={form.agency} onChange={onChange} className="mt-1 w-full border p-2 rounded" /></label>
-            <label className="block"><div className="text-sm">งบประมาณ (บาท)</div><input type="number" name="budget" value={form.budget} onChange={onChange} className="mt-1 w-full border p-2 rounded" placeholder="0.00" step="0.01" /></label>
+            <label className="block"><div className="text-sm">งบประมาณ (บาท)</div><input type="text" name="budget" value={displayBudget} onChange={handleBudgetChange} className="mt-1 w-full border p-2 rounded text-right" placeholder="0.00" /></label>
           </div>
           <label className="block"><div className="text-sm">สถานะ</div><select name="status" value={form.status} onChange={onChange} className="mt-1 w-full border p-2 rounded"><option value="In Progress">กำลังดำเนินการ</option><option value="Completed">เสร็จสิ้น</option><option value="Cancelled">ยกเลิก</option></select></label>
         </div>
